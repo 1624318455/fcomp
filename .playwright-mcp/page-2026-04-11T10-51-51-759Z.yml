@@ -1,0 +1,43 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - heading "FComp" [level=1] [ref=e5]
+      - generic [ref=e6]: 文件比对工具
+      - button "开始比对" [ref=e7] [cursor=pointer]:
+        - img [ref=e8]
+        - text: 开始比对
+    - generic [ref=e11]:
+      - generic [ref=e12] [cursor=pointer]:
+        - checkbox "同步滚动" [checked]
+        - generic [ref=e15]: 同步滚动
+      - button "清空左侧" [active] [ref=e16] [cursor=pointer]
+      - button "清空右侧" [ref=e17] [cursor=pointer]
+      - button "清空全部" [ref=e18] [cursor=pointer]
+  - main [ref=e19]:
+    - generic [ref=e20]:
+      - region "原始文件面板" [ref=e21]:
+        - generic [ref=e22]:
+          - heading "原始文件" [level=2] [ref=e23]:
+            - img [ref=e24]
+            - text: 原始文件
+          - generic [ref=e60]: 未选择文件
+        - generic "源文件拖放区域" [ref=e29]:
+          - button "Choose File" [ref=e30] [cursor=pointer]
+          - generic [ref=e31] [cursor=pointer]:
+            - img [ref=e32]
+            - generic [ref=e35]:
+              - generic [ref=e36]: 拖放文件到此处
+              - generic [ref=e37]: 或点击选择文件
+      - region "比较文件面板" [ref=e38]:
+        - generic [ref=e39]:
+          - heading "比较文件" [level=2] [ref=e40]:
+            - img [ref=e41]
+            - text: 比较文件
+          - generic [ref=e45]: 未选择文件
+        - generic "比较文件拖放区域" [ref=e46]:
+          - button "Choose File" [ref=e47] [cursor=pointer]
+          - generic [ref=e48] [cursor=pointer]:
+            - img [ref=e49]
+            - generic [ref=e52]:
+              - generic [ref=e53]: 拖放文件到此处
+              - generic [ref=e54]: 或点击选择文件

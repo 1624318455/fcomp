@@ -357,6 +357,11 @@ body {
   z-index: 100;
 }
 
+.drop-zone.has-file .file-input-hidden {
+  pointer-events: none;
+  z-index: 1;
+}
+
 /* 文件预览区域 */
 .file-preview {
   position: absolute;
@@ -1051,6 +1056,9 @@ body {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
 }
 
 .diff-results-panel.active {
