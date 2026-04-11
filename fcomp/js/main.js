@@ -1,0 +1,398 @@
+/**
+ * FComp 主入口文件
+ * 负责初始化应用、绑定事件、全局状态管理
+ * 严格遵循架构方案设计规范
+ */
+
+(function() {
+  'use strict';
+
+  // ========================================
+  // 全局状态
+  // ========================================
+  
+  var state = {
+    sourceContent: '',
+    targetContent: '',
+    sourceFileName: '',
+    targetFileName: '',
+    diffResult: null,
+    syncScrollEnabled: true,
+    isComparing: false
+  };
+
+  // ========================================
+  // DOM 元素引用
+  // ========================================
+  
+  var elements = {
+    // 面板
+    sourcePanel: null,
+    targetPanel: null,
+    sourceCodeContent: null,
+    targetCodeContent: null,
+    sourceLineNumbers: null,
+    targetLineNumbers: null,
+    
+    // 文件名显示
+    sourceFileName: null,
+    targetFileName: null,
+    
+    // 文件输入
+    sourceFileInput: null,
+    targetFileInput: null,
+    
+    // 按钮
+    sourceUploadBtn: null,
+    targetUploadBtn: null,
+    compareBtn: null,
+    clearLeftBtn: null,
+    clearRightBtn: null,
+    clearAllBtn: null,
+    
+    // 开关
+    syncScrollToggle: null,
+    
+    // 统计
+    statTotal: null,
+    statAdded: null,
+    statRemoved: null,
+    statModified: null
+  };
+
+  // ========================================
+  // 初始化
+  // ========================================
+  
+  /**
+   * 初始化应用
+   */
+  function init() {
+    // 缓存 DOM 元素
+    cacheElements();
+    
+    // 绑定事件
+    bindEvents();
+    
+    // 初始化同步滚动
+    ScrollSync.init(elements.sourcePanel, elements.targetPanel);
+    
+    // 检测 jsdiff 是否加载成功
+    checkJsDiffLoaded();
+    
+    console.log('FComp 初始化完成');
+  }
+
+  /**
+   * 缓存 DOM 元素引用
+   */
+  function cacheElements() {
+    elements.sourcePanel = document.getElementById('source-panel');
+    elements.targetPanel = document.getElementById('target-panel');
+    elements.sourceCodeContent = document.getElementById('source-code-content');
+    elements.targetCodeContent = document.getElementById('target-code-content');
+    elements.sourceLineNumbers = document.getElementById('source-line-numbers');
+    elements.targetLineNumbers = document.getElementById('target-line-numbers');
+    
+    elements.sourceFileName = document.getElementById('source-file-name');
+    elements.targetFileName = document.getElementById('target-file-name');
+    
+    elements.sourceFileInput = document.getElementById('source-file-input');
+    elements.targetFileInput = document.getElementById('target-file-input');
+    
+    elements.sourceUploadBtn = document.getElementById('source-upload-btn');
+    elements.targetUploadBtn = document.getElementById('target-upload-btn');
+    elements.compareBtn = document.getElementById('compare-btn');
+    elements.clearLeftBtn = document.getElementById('clear-left');
+    elements.clearRightBtn = document.getElementById('clear-right');
+    elements.clearAllBtn = document.getElementById('clear-all');
+    
+    elements.syncScrollToggle = document.getElementById('sync-scroll-toggle');
+    
+    elements.statTotal = document.getElementById('stat-total');
+    elements.statAdded = document.getElementById('stat-added');
+    elements.statRemoved = document.getElementById('stat-removed');
+    elements.statModified = document.getElementById('stat-modified');
+  }
+
+  /**
+   * 检查 jsdiff 是否加载成功
+   */
+  function checkJsDiffLoaded() {
+    if (typeof Diff === 'undefined') {
+      alert('错误：jsdiff 库加载失败，请检查网络连接后刷新页面重试。');
+      elements.compareBtn.disabled = true;
+      return false;
+    }
+    return true;
+  }
+
+  // ========================================
+  // 事件绑定
+  // ========================================
+  
+  /**
+   * 绑定所有事件
+   */
+  function bindEvents() {
+    // 文件上传按钮
+    elements.sourceUploadBtn.addEventListener('click', function() {
+      elements.sourceFileInput.click();
+    });
+    
+    elements.targetUploadBtn.addEventListener('click', function() {
+      elements.targetFileInput.click();
+    });
+    
+    // 文件选择
+    elements.sourceFileInput.addEventListener('change', function(e) {
+      handleFileSelect(e, 'source');
+    });
+    
+    elements.targetFileInput.addEventListener('change', function(e) {
+      handleFileSelect(e, 'target');
+    });
+    
+    // 文本编辑区输入（支持粘贴）
+    elements.sourceCodeContent.addEventListener('input', function(e) {
+      state.sourceContent = e.target.innerText;
+    });
+    
+    elements.targetCodeContent.addEventListener('input', function(e) {
+      state.targetContent = e.target.innerText;
+    });
+    
+    // 粘贴事件
+    elements.sourceCodeContent.addEventListener('paste', handlePaste);
+    elements.targetCodeContent.addEventListener('paste', handlePaste);
+    
+    // 开始比对按钮
+    elements.compareBtn.addEventListener('click', handleCompare);
+    
+    // 清空按钮
+    elements.clearLeftBtn.addEventListener('click', handleClearLeft);
+    elements.clearRightBtn.addEventListener('click', handleClearRight);
+    elements.clearAllBtn.addEventListener('click', handleClearAll);
+    
+    // 同步滚动开关
+    elements.syncScrollToggle.addEventListener('change', function(e) {
+      state.syncScrollEnabled = e.target.checked;
+      ScrollSync.toggle(state.syncScrollEnabled);
+    });
+    
+    // 键盘快捷键
+    document.addEventListener('keydown', handleKeyDown);
+  }
+
+  // ========================================
+  // 事件处理函数
+  // ========================================
+  
+  /**
+   * 处理文件选择
+   * @param {Event} e - 事件对象
+   * @param {string} panel - 面板类型 ('source' 或 'target')
+   */
+  async function handleFileSelect(e, panel) {
+    var fileInput = e.target;
+    var file = fileInput.files[0];
+    
+    if (!file) {
+      return;
+    }
+    
+    try {
+      // 读取文件
+      var result = await FileHandler.handleFile(file);
+      
+      // 更新状态
+      if (panel === 'source') {
+        state.sourceContent = result.content;
+        state.sourceFileName = result.name;
+        UIRenderer.setFileName(elements.sourcePanel, result.name);
+      } else {
+        state.targetContent = result.content;
+        state.targetFileName = result.name;
+        UIRenderer.setFileName(elements.targetPanel, result.name);
+      }
+      
+      // 渲染内容
+      var panelEl = panel === 'source' ? elements.sourcePanel : elements.targetPanel;
+      UIRenderer.renderPlainText(panelEl, result.content);
+      
+      // 同步滚动位置
+      ScrollSync.syncScroll();
+      
+    } catch (error) {
+      alert('文件读取失败：' + error.message);
+    }
+    
+    // 清除文件输入，以便再次选择同一文件
+    fileInput.value = '';
+  }
+
+  /**
+   * 处理粘贴事件
+   * @param {Event} e - 粘贴事件对象
+   */
+  function handlePaste(e) {
+    // 延迟处理，确保粘贴完成
+    setTimeout(function() {
+      var sourceText = elements.sourceCodeContent.innerText;
+      var targetText = elements.targetCodeContent.innerText;
+      
+      // 更新状态
+      state.sourceContent = sourceText;
+      state.targetContent = targetText;
+      
+      // 如果是粘贴到空面板，更新文件名显示
+      if (e.target === elements.sourceCodeContent && !state.sourceFileName && sourceText) {
+        elements.sourceFileName.innerHTML = '<span class="file-name-placeholder">粘贴内容</span>';
+      }
+      if (e.target === elements.targetCodeContent && !state.targetFileName && targetText) {
+        elements.targetFileName.innerHTML = '<span class="file-name-placeholder">粘贴内容</span>';
+      }
+    }, 0);
+  }
+
+  /**
+   * 处理比对
+   */
+  function handleCompare() {
+    // 检查输入
+    if (!state.sourceContent && !state.targetContent) {
+      alert('请至少在一个面板中输入或上传文件内容');
+      return;
+    }
+    
+    if (!checkJsDiffLoaded()) {
+      return;
+    }
+    
+    // 显示加载状态
+    state.isComparing = true;
+    UIRenderer.setLoadingState(elements.compareBtn, true);
+    
+    // 使用 setTimeout 确保 UI 更新
+    setTimeout(function() {
+      try {
+        // 执行比对
+        var diffResult = DiffEngine.compare(state.sourceContent, state.targetContent);
+        
+        // 渲染结果
+        UIRenderer.renderDiff(elements.sourcePanel, elements.targetPanel, diffResult);
+        
+        // 保存结果到状态
+        state.diffResult = diffResult;
+        
+        // 同步滚动位置
+        ScrollSync.syncScroll();
+        
+      } catch (error) {
+        alert('比对失败：' + error.message);
+        console.error(error);
+      } finally {
+        state.isComparing = false;
+        UIRenderer.setLoadingState(elements.compareBtn, false);
+      }
+    }, 50);
+  }
+
+  /**
+   * 清空左侧面板
+   */
+  function handleClearLeft() {
+    if (state.sourceContent && !window.confirm('确定要清空左侧内容吗？')) {
+      return;
+    }
+    
+    state.sourceContent = '';
+    state.sourceFileName = '';
+    
+    UIRenderer.clearPanel(elements.sourcePanel);
+    UIRenderer.setFileName(elements.sourcePanel, '');
+  }
+
+  /**
+   * 清空右侧面板
+   */
+  function handleClearRight() {
+    if (state.targetContent && !window.confirm('确定要清空右侧内容吗？')) {
+      return;
+    }
+    
+    state.targetContent = '';
+    state.targetFileName = '';
+    
+    UIRenderer.clearPanel(elements.targetPanel);
+    UIRenderer.setFileName(elements.targetPanel, '');
+  }
+
+  /**
+   * 清空全部面板
+   */
+  function handleClearAll() {
+    if ((state.sourceContent || state.targetContent) && !window.confirm('确定要清空所有内容吗？')) {
+      return;
+    }
+    
+    state.sourceContent = '';
+    state.targetContent = '';
+    state.sourceFileName = '';
+    state.targetFileName = '';
+    state.diffResult = null;
+    
+    UIRenderer.clearBothPanels(elements.sourcePanel, elements.targetPanel);
+    UIRenderer.setFileName(elements.sourcePanel, '');
+    UIRenderer.setFileName(elements.targetPanel, '');
+  }
+
+  /**
+   * 处理键盘快捷键
+   * @param {Event} e - 键盘事件
+   */
+  function handleKeyDown(e) {
+    // Ctrl+Enter 执行比对
+    if (e.ctrlKey && e.key === 'Enter') {
+      e.preventDefault();
+      handleCompare();
+    }
+    
+    // Ctrl+Shift+Delete 清空全部
+    if (e.ctrlKey && e.shiftKey && e.key === 'Delete') {
+      e.preventDefault();
+      handleClearAll();
+    }
+  }
+
+  // ========================================
+  // 辅助函数
+  // ========================================
+  
+  /**
+   * 检查 jsdiff 是否加载
+   */
+  function checkJsDiffLoaded() {
+    if (typeof Diff === 'undefined') {
+      alert('错误：jsdiff 库加载失败，请检查网络连接后刷新页面重试。');
+      elements.compareBtn.disabled = true;
+      return false;
+    }
+    return true;
+  }
+
+  // ========================================
+  // 启动
+  // ========================================
+  
+  // DOM 加载完成后初始化
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
+
+// 导出全局状态（用于调试）
+// window.FCompState = state;
