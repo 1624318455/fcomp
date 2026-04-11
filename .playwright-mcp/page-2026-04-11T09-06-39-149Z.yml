@@ -1,0 +1,39 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - heading "FComp" [level=1] [ref=e5]
+      - generic [ref=e6]: 文件比对工具
+      - button "开始比对" [ref=e7] [cursor=pointer]:
+        - img [ref=e8]
+        - text: 开始比对
+    - generic [ref=e11]:
+      - generic [ref=e12] [cursor=pointer]:
+        - checkbox "同步滚动" [checked]
+        - generic [ref=e15]: 同步滚动
+      - button "清空左侧" [ref=e16] [cursor=pointer]
+      - button "清空右侧" [ref=e17] [cursor=pointer]
+      - button "清空全部" [ref=e18] [cursor=pointer]
+  - main [ref=e19]:
+    - generic [ref=e20]:
+      - region "原始文件面板" [ref=e21]:
+        - generic [ref=e22]:
+          - heading "原始文件" [level=2] [ref=e23]:
+            - img [ref=e24]
+            - text: 原始文件
+          - generic [ref=e28]: 未选择文件
+          - button "上传文件" [ref=e30] [cursor=pointer]:
+            - img [ref=e31]
+            - text: 上传文件
+        - region "源文件内容" [ref=e34]:
+          - textbox "源文件编辑区" [active] [ref=e36]: 在此粘贴或输入文本...
+      - region "比较文件面板" [ref=e37]:
+        - generic [ref=e38]:
+          - heading "比较文件" [level=2] [ref=e39]:
+            - img [ref=e40]
+            - text: 比较文件
+          - generic [ref=e44]: 未选择文件
+          - button "上传文件" [ref=e46] [cursor=pointer]:
+            - img [ref=e47]
+            - text: 上传文件
+        - region "目标文件内容" [ref=e50]:
+          - textbox "目标文件编辑区" [ref=e52]: 在此粘贴或输入文本...

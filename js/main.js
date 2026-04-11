@@ -297,49 +297,45 @@
 
   /**
    * 处理粘贴事件
+   * 必须在浏览器默认行为之前拦截，阻止空白字符规范化
    * @param {Event} e - 粘贴事件对象
    */
   function handlePaste(e) {
-    // 延迟处理，确保粘贴完成
-    setTimeout(function() {
-      // 使用 getPanelContent 正确获取带换行的内容
-      var sourceText = getPanelContent(elements.sourceCodeContent);
-      var targetText = getPanelContent(elements.targetCodeContent);
-      
-      // 如果有差异结果，需要先恢复编辑状态
-      if (state.diffResult) {
-        var currentTarget = e.target === elements.targetCodeContent ? targetText : '';
-        var currentSource = e.target === elements.sourceCodeContent ? sourceText : '';
-        
-        if (e.target === elements.sourceCodeContent) {
-          clearDiffAndRestoreEdit(elements.sourcePanel, 'source');
-        } else if (e.target === elements.targetCodeContent) {
-          clearDiffAndRestoreEdit(elements.targetPanel, 'target');
-        }
-        
-        // 恢复用户新粘贴的内容
-        if (currentTarget && e.target === elements.targetCodeContent) {
-          setPanelContent(elements.targetCodeContent, currentTarget);
-          targetText = currentTarget;
-        }
-        if (currentSource && e.target === elements.sourceCodeContent) {
-          setPanelContent(elements.sourceCodeContent, currentSource);
-          sourceText = currentSource;
-        }
-      }
-      
-      // 更新状态
-      state.sourceContent = sourceText;
-      state.targetContent = targetText;
-      
-      // 如果是粘贴到空面板，更新文件名显示
-      if (e.target === elements.sourceCodeContent && !state.sourceFileName && sourceText) {
-        elements.sourceFileName.innerHTML = '<span class="file-name-placeholder">粘贴内容</span>';
-      }
-      if (e.target === elements.targetCodeContent && !state.targetFileName && targetText) {
-        elements.targetFileName.innerHTML = '<span class="file-name-placeholder">粘贴内容</span>';
-      }
-    }, 0);
+    // 获取剪贴板数据
+    var clipboardData = e.clipboardData || window.clipboardData;
+    if (!clipboardData) return;
+    
+    // 获取粘贴的纯文本内容
+    var pastedText = clipboardData.getData('text/plain') || clipboardData.getData('text');
+    if (!pastedText) return;
+    
+    // 获取目标面板
+    var targetPanel = e.target === elements.sourceCodeContent ? 'source' : 
+                      (e.target === elements.targetCodeContent ? 'target' : null);
+    if (!targetPanel) return;
+    
+    // 阻止浏览器默认粘贴行为
+    e.preventDefault();
+    
+    // 如果有差异结果，先恢复编辑状态
+    if (state.diffResult) {
+      var panelEl = targetPanel === 'source' ? elements.sourcePanel : elements.targetPanel;
+      clearDiffAndRestoreEdit(panelEl, targetPanel);
+    }
+    
+    // 以正确格式插入内容（每行一个div，保留空行）
+    var targetEl = targetPanel === 'source' ? elements.sourceCodeContent : elements.targetCodeContent;
+    setPanelContent(targetEl, pastedText);
+    
+    // 更新状态
+    var stateKey = targetPanel === 'source' ? 'sourceContent' : 'targetContent';
+    state[stateKey] = pastedText;
+    
+    // 更新文件名显示
+    var fileNameEl = targetPanel === 'source' ? elements.sourceFileName : elements.targetFileName;
+    if (!state[targetPanel === 'source' ? 'sourceFileName' : 'targetFileName'] && pastedText) {
+      fileNameEl.innerHTML = '<span class="file-name-placeholder">粘贴内容</span>';
+    }
   }
   
   /**
