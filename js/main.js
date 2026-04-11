@@ -303,18 +303,31 @@
   function handlePaste(e) {
     // 延迟处理，确保粘贴完成
     setTimeout(function() {
-      // 检测差异结果是否存在，存在则清除
+      // 先获取粘贴后的内容
+      var sourceText = elements.sourceCodeContent.textContent;
+      var targetText = elements.targetCodeContent.textContent;
+      
+      // 如果有差异结果，需要先恢复编辑状态
       if (state.diffResult) {
+        var currentTarget = e.target === elements.targetCodeContent ? targetText : '';
+        var currentSource = e.target === elements.sourceCodeContent ? sourceText : '';
+        
         if (e.target === elements.sourceCodeContent) {
           clearDiffAndRestoreEdit(elements.sourcePanel, 'source');
         } else if (e.target === elements.targetCodeContent) {
           clearDiffAndRestoreEdit(elements.targetPanel, 'target');
         }
+        
+        // 恢复用户新粘贴的内容
+        if (currentTarget && e.target === elements.targetCodeContent) {
+          elements.targetCodeContent.textContent = currentTarget;
+          targetText = currentTarget;
+        }
+        if (currentSource && e.target === elements.sourceCodeContent) {
+          elements.sourceCodeContent.textContent = currentSource;
+          sourceText = currentSource;
+        }
       }
-      
-      // 使用 textContent 保留原始格式，包括空行
-      var sourceText = elements.sourceCodeContent.textContent;
-      var targetText = elements.targetCodeContent.textContent;
       
       // 更新状态
       state.sourceContent = sourceText;
