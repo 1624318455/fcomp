@@ -429,8 +429,48 @@
       handleCompare();
     }
   }
+  
+  /**
+   * 差异面板拖拽调整高度
+   */
+  function setupDiffPanelResize() {
+    var diffPanel = document.getElementById('diff-results-panel');
+    var header = diffPanel ? diffPanel.querySelector('.diff-results-header') : null;
+    if (!diffPanel || !header) return;
+    
+    var isResizing = false;
+    var startY = 0;
+    var startHeight = 0;
+    var minHeight = 80;
+    var maxHeight = window.innerHeight * 0.6;
+    
+    header.addEventListener('mousedown', function(e) {
+      if (!diffPanel.classList.contains('active')) return;
+      isResizing = true;
+      startY = e.clientY;
+      startHeight = diffPanel.offsetHeight;
+      document.body.style.cursor = 'ns-resize';
+      document.body.style.userSelect = 'none';
+    });
+    
+    document.addEventListener('mousemove', function(e) {
+      if (!isResizing) return;
+      var delta = startY - e.clientY;
+      var newHeight = Math.min(maxHeight, Math.max(minHeight, startHeight + delta));
+      diffPanel.style.height = newHeight + 'px';
+    });
+    
+    document.addEventListener('mouseup', function() {
+      if (isResizing) {
+        isResizing = false;
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      }
+    });
+  }
 
   // 初始化应用
   init();
+  setupDiffPanelResize();
 
 })();
