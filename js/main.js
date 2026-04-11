@@ -205,6 +205,39 @@
   }
 
   /**
+   * 渲染文件内容（每行带行号）
+   */
+  function renderFileContent(container, content) {
+    var lines = content.split('\n');
+    container.innerHTML = '';
+    lines.forEach(function(line, index) {
+      var span = document.createElement('span');
+      span.className = 'code-line';
+      span.dataset.line = index + 1;
+      span.textContent = line;
+      container.appendChild(span);
+      if (index < lines.length - 1) {
+        container.appendChild(document.createTextNode('\n'));
+      }
+    });
+  }
+
+  /**
+   * 滚动到指定行并高亮
+   */
+  function scrollToLine(side, lineNum) {
+    var contentEl = side === 'source' ? elements.sourceCodeContent : elements.targetCodeContent;
+    var lineEl = contentEl.querySelector('[data-line="' + lineNum + '"]');
+    if (lineEl) {
+      lineEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      lineEl.classList.add('line-highlight');
+      setTimeout(function() {
+        lineEl.classList.remove('line-highlight');
+      }, 1500);
+    }
+  }
+
+  /**
     * 处理文件
    */
   function handleFile(file, side) {
@@ -218,13 +251,13 @@
         state.sourceContent = content;
         state.sourceFileName = file.name;
         elements.sourceFileName.innerHTML = '<span>' + escapeHtml(file.name) + '</span>';
-        elements.sourceCodeContent.textContent = content;
+        renderFileContent(elements.sourceCodeContent, content);
         elements.sourceDropZone.classList.add('has-file');
       } else {
         state.targetContent = content;
         state.targetFileName = file.name;
         elements.targetFileName.innerHTML = '<span>' + escapeHtml(file.name) + '</span>';
-        elements.targetCodeContent.textContent = content;
+        renderFileContent(elements.targetCodeContent, content);
         elements.targetDropZone.classList.add('has-file');
       }
       
@@ -258,13 +291,13 @@
       state.sourceContent = '';
       state.sourceFileName = '';
       elements.sourceFileName.innerHTML = '<span class="file-name-placeholder">未选择文件</span>';
-      elements.sourceCodeContent.textContent = '';
+      elements.sourceCodeContent.innerHTML = '';
       elements.sourceDropZone.classList.remove('has-file');
     } else {
       state.targetContent = '';
       state.targetFileName = '';
       elements.targetFileName.innerHTML = '<span class="file-name-placeholder">未选择文件</span>';
-      elements.targetCodeContent.textContent = '';
+      elements.targetCodeContent.innerHTML = '';
       elements.targetDropZone.classList.remove('has-file');
     }
     
@@ -402,6 +435,10 @@
       
       el.innerHTML = '<span class="diff-result-line">' + sideLabel + ' 第' + item.lineNum + '行</span>' +
         '<span class="diff-result-content">' + escapeHtml(item.content) + '</span>';
+      
+      el.addEventListener('click', function() {
+        scrollToLine(item.side, item.lineNum);
+      });
       
       contentEl.appendChild(el);
     });

@@ -480,6 +480,27 @@ body {
   word-break: break-all;
 }
 
+/* 文件内容行 */
+.code-line {
+  display: block;
+  min-height: calc(13px * 1.7);
+  padding: 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--color-text-primary);
+}
+
+.code-line.line-highlight {
+  background-color: #fef08a;
+  animation: linePulse 1.5s ease-out;
+}
+
+@keyframes linePulse {
+  0% { background-color: #facc15; }
+  100% { background-color: #fef08a; }
+}
+
 /* 词级高亮 */
 .word-added {
   background-color: var(--color-added-word);
