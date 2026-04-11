@@ -109,10 +109,14 @@
     // 清除差异摘要
     var summaryList = document.getElementById('diff-summary-list');
     if (summaryList) summaryList.innerHTML = '';
-    document.getElementById('stat-total').textContent = '0';
-    document.getElementById('stat-added').textContent = '0';
-    document.getElementById('stat-removed').textContent = '0';
-    document.getElementById('stat-modified').textContent = '0';
+    var statTotal = document.getElementById('stat-total');
+    var statAdded = document.getElementById('stat-added');
+    var statRemoved = document.getElementById('stat-removed');
+    var statModified = document.getElementById('stat-modified');
+    if (statTotal) statTotal.textContent = '0';
+    if (statAdded) statAdded.textContent = '0';
+    if (statRemoved) statRemoved.textContent = '0';
+    if (statModified) statModified.textContent = '0';
     
     // 清除差异结果状态
     state.diffResult = null;
@@ -469,9 +473,14 @@
     var stats = diffResult.stats || { added: 0, removed: 0, modified: 0, total: 0 };
     
     // 更新统计
-    document.getElementById('stat-added').textContent = stats.added;
-    document.getElementById('stat-removed').textContent = stats.removed;
-    document.getElementById('stat-modified').textContent = stats.modified;
+    var statTotal = document.getElementById('stat-total');
+    var statAdded = document.getElementById('stat-added');
+    var statRemoved = document.getElementById('stat-removed');
+    var statModified = document.getElementById('stat-modified');
+    if (statTotal) statTotal.textContent = stats.total;
+    if (statAdded) statAdded.textContent = stats.added;
+    if (statRemoved) statRemoved.textContent = stats.removed;
+    if (statModified) statModified.textContent = stats.modified;
     
     // 清空并渲染差异列表
     contentEl.innerHTML = '';
@@ -592,10 +601,14 @@
     // 清空对比结果摘要
     var summaryList = document.getElementById('diff-summary-list');
     if (summaryList) summaryList.innerHTML = '';
-    document.getElementById('stat-total').textContent = '0';
-    document.getElementById('stat-added').textContent = '0';
-    document.getElementById('stat-removed').textContent = '0';
-    document.getElementById('stat-modified').textContent = '0';
+    var statTotal = document.getElementById('stat-total');
+    var statAdded = document.getElementById('stat-added');
+    var statRemoved = document.getElementById('stat-removed');
+    var statModified = document.getElementById('stat-modified');
+    if (statTotal) statTotal.textContent = '0';
+    if (statAdded) statAdded.textContent = '0';
+    if (statRemoved) statRemoved.textContent = '0';
+    if (statModified) statModified.textContent = '0';
     showToast('已清空所有内容', 'info');
   }
 
