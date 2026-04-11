@@ -226,10 +226,6 @@
       state.targetContent = getPanelContent(elements.targetCodeContent);
     });
     
-    // 粘贴事件
-    elements.sourceCodeContent.addEventListener('paste', handlePaste);
-    elements.targetCodeContent.addEventListener('paste', handlePaste);
-    
     // 开始比对按钮
     elements.compareBtn.addEventListener('click', handleCompare);
     
@@ -295,121 +291,7 @@
     fileInput.value = '';
   }
 
-  /**
-   * 处理粘贴事件
-   * 阻止默认行为，手动获取剪贴板数据并以正确格式插入
-   * @param {Event} e - 粘贴事件对象
-   */
-  function handlePaste(e) {
-    // 获取剪贴板数据
-    var clipboardData = e.clipboardData || window.clipboardData;
-    if (!clipboardData) return;
-    
-    // 获取粘贴的纯文本
-    var pastedText = '';
-    if (clipboardData.types) {
-      if (clipboardData.types.includes('text/plain')) {
-        pastedText = clipboardData.getData('text/plain');
-      } else if (clipboardData.types.includes('text/html')) {
-        pastedText = clipboardData.getData('text/plain');
-      }
-    }
-    if (!pastedText && clipboardData.getData) {
-      pastedText = clipboardData.getData('text/plain') || clipboardData.getData('text');
-    }
-    
-    // 如果获取失败，提示用户
-    if (!pastedText) {
-      showToast('粘贴失败，请尝试使用 Ctrl+Shift+V 或右键粘贴', 'warning');
-      return;
-    }
-    
-    // 获取目标面板
-    var targetPanel = e.target === elements.sourceCodeContent ? 'source' : 
-                      (e.target === elements.targetCodeContent ? 'target' : null);
-    if (!targetPanel) return;
-    
-    // 如果有差异结果，先恢复编辑状态
-    if (state.diffResult) {
-      var panelEl = targetPanel === 'source' ? elements.sourcePanel : elements.targetPanel;
-      clearDiffAndRestoreEdit(panelEl, targetPanel);
-    }
-    
-    var targetEl = targetPanel === 'source' ? elements.sourceCodeContent : elements.targetCodeContent;
-    
-    // 获取当前光标位置（用于在正确位置插入）
-    var selection = window.getSelection();
-    var cursorPosition = getCursorPosition(targetEl);
-    
-    // 获取当前内容，在光标位置插入新文本
-    var currentContent = getPanelContent(targetEl);
-    var before = currentContent.substring(0, cursorPosition);
-    var after = currentContent.substring(cursorPosition);
-    var newContent = before + pastedText + after;
-    
-    // 用正确格式设置内容
-    setPanelContent(targetEl, newContent);
-    
-    // 更新状态
-    var stateKey = targetPanel === 'source' ? 'sourceContent' : 'targetContent';
-    state[stateKey] = newContent;
-    
-    // 更新文件名显示
-    var fileNameEl = targetPanel === 'source' ? elements.sourceFileName : elements.targetFileName;
-    if (!state[targetPanel === 'source' ? 'sourceFileName' : 'targetFileName'] && newContent) {
-      fileNameEl.innerHTML = '<span class="file-name-placeholder">粘贴内容</span>';
-    }
-    
-    // 阻止浏览器默认粘贴（我们已经手动处理了）
-    e.preventDefault();
-  }
-  
-  /**
-   * 获取光标在元素中的字符位置
-   * @param {HTMLElement} element - 目标元素
-   * @returns {number} 光标位置
-   */
-  function getCursorPosition(element) {
-    var selection = window.getSelection();
-    if (!selection.rangeCount) return getPanelContent(element).length;
-    
-    var range = selection.getRangeAt(0);
-    var preCaretRange = range.cloneRange();
-    preCaretRange.selectNodeContents(element);
-    preCaretRange.setEnd(range.endContainer, range.endOffset);
-    
-    // 计算位置（需要考虑换行）
-    var tempDiv = document.createElement('div');
-    tempDiv.appendChild(preCaretRange.cloneContents());
-    var tempContent = tempDiv.textContent || '';
-    
-    // 找到对应的字符位置
-    var fullContent = getPanelContent(element);
-    var result = 0;
-    var charCount = 0;
-    var divCount = 0;
-    
-    for (var i = 0; i < fullContent.length; i++) {
-      if (charCount >= tempContent.length) break;
-      if (fullContent[i] === '\n') divCount++;
-      charCount++;
-    }
-    
-    // 简单方案：计算到当前行为止的字符数
-    var beforeRange = document.createRange();
-    beforeRange.selectNodeContents(element);
-    beforeRange.setEnd(range.endContainer, range.endOffset);
-    
-    var tempContainer = document.createElement('div');
-    tempContainer.appendChild(beforeRange.cloneContents());
-    
-    // 计算行数
-    var tempText = tempContainer.textContent || '';
-    var lines = tempText.split('\n');
-    result = lines.join('\n').length;
-    
-    return result;
-  }
+
   
   /**
    * 设置面板内容（处理 contenteditable div 的特殊结构）
