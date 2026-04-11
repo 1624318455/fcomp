@@ -146,24 +146,21 @@
   function setupDropZone(dropZone, fileInput, side) {
     if (!dropZone || !fileInput) return;
     
-    // 点击触发文件选择
-    dropZone.addEventListener('click', function(e) {
-      // 如果点击的是清除按钮，不触发文件选择
-      if (e.target.classList.contains('clear-file-btn')) {
-        e.stopPropagation();
-        clearPanel(side);
-        showToast(side === 'source' ? '左侧已清空' : '右侧已清空', 'info');
-        return;
-      }
-      fileInput.click();
-    });
-    
     // 文件选择变化
     fileInput.addEventListener('change', function(e) {
       if (e.target.files && e.target.files.length > 0) {
         handleFile(e.target.files[0], side);
       }
     });
+    
+    // 清除按钮点击
+    var clearBtn = document.getElementById(side === 'source' ? 'source-clear-btn' : 'target-clear-btn');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        clearPanel(side);
+      });
+    }
     
     // 拖拽进入
     dropZone.addEventListener('dragenter', function(e) {
@@ -200,10 +197,11 @@
   }
 
   /**
-   * 处理文件
+    * 处理文件
    */
   function handleFile(file, side) {
     var reader = new FileReader();
+    var fileInput = side === 'source' ? elements.sourceFileInput : elements.targetFileInput;
     
     reader.onload = function(e) {
       var content = e.target.result;
@@ -229,11 +227,16 @@
       }
       state.diffResult = null;
       
+      // 清空 file input 以便再次选择同一文件
+      fileInput.value = '';
+      
       showToast('文件 "' + file.name + '" 已加载', 'success');
     };
     
     reader.onerror = function() {
       showToast('文件读取失败', 'error');
+      // 清空 file input
+      fileInput.value = '';
     };
     
     reader.readAsText(file);
