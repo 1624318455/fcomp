@@ -322,7 +322,7 @@ body {
   font-size: 13px;
   line-height: 1.7;
   color: var(--color-text-primary);
-  white-space: pre-wrap;
+  white-space: pre;
   word-break: break-all;
   outline: none;
 }
