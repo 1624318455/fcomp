@@ -1,0 +1,215 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content":
+    - /url: "#geist-skip-nav"
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e9]:
+            - link "memeflyfly's projects Hobby" [ref=e10] [cursor=pointer]:
+              - /url: /memeflyflys-projects
+              - img [ref=e11]
+              - generic [ref=e12]:
+                - generic [ref=e13]: memeflyfly's projects
+                - generic [ref=e15]: Hobby
+            - button [ref=e16] [cursor=pointer]:
+              - img [ref=e18]
+          - button "Find… F" [ref=e21]:
+            - generic [ref=e23]:
+              - img [ref=e25]
+              - generic [ref=e27]: Find…
+              - generic [ref=e29]: F
+        - navigation [ref=e31]:
+          - generic [ref=e34]:
+            - link "Overview" [ref=e35] [cursor=pointer]:
+              - /url: /memeflyflys-projects/fcomp
+              - generic [ref=e39]: Overview
+            - link "Deployments" [ref=e40] [cursor=pointer]:
+              - /url: /memeflyflys-projects/fcomp/deployments
+              - img [ref=e42]
+              - generic [ref=e45]: Deployments
+            - link "Logs" [ref=e46] [cursor=pointer]:
+              - /url: /memeflyflys-projects/fcomp/logs
+              - img [ref=e48]
+              - generic [ref=e51]: Logs
+            - link "Analytics" [ref=e52] [cursor=pointer]:
+              - /url: /memeflyflys-projects/fcomp/analytics
+              - img [ref=e54]
+              - generic [ref=e57]: Analytics
+            - link "Speed Insights" [ref=e58] [cursor=pointer]:
+              - /url: /memeflyflys-projects/fcomp/speed-insights
+              - img [ref=e60]
+              - generic [ref=e63]: Speed Insights
+            - link "Observability" [ref=e64] [cursor=pointer]:
+              - /url: /memeflyflys-projects/fcomp/observability
+              - img [ref=e66]
+              - generic [ref=e69]: Observability
+              - img [ref=e71]
+            - link "Firewall" [ref=e73] [cursor=pointer]:
+              - /url: /memeflyflys-projects/fcomp/firewall
+              - img [ref=e75]
+              - generic [ref=e79]: Firewall
+              - img [ref=e81]
+            - link "CDN" [ref=e83] [cursor=pointer]:
+              - /url: /memeflyflys-projects/fcomp/cdn
+              - img [ref=e85]
+              - generic [ref=e88]: CDN
+              - img [ref=e90]
+            - separator [ref=e92]
+            - link "Domains" [ref=e93] [cursor=pointer]:
+              - /url: /memeflyflys-projects/fcomp/settings/domains
+              - img [ref=e95]
+              - generic [ref=e98]: Domains
+            - link "Integrations" [ref=e99] [cursor=pointer]:
+              - /url: /memeflyflys-projects/fcomp/settings/integrations
+              - img [ref=e101]
+              - generic [ref=e104]: Integrations
+            - link "Storage" [ref=e105] [cursor=pointer]:
+              - /url: /memeflyflys-projects/fcomp/stores
+              - img [ref=e107]
+              - generic [ref=e110]: Storage
+            - link "Flags" [ref=e111] [cursor=pointer]:
+              - /url: /memeflyflys-projects/fcomp/flags
+              - img [ref=e113]
+              - generic [ref=e116]: Flags
+              - img [ref=e118]
+            - link "Agent" [ref=e120] [cursor=pointer]:
+              - /url: /memeflyflys-projects/fcomp/agent
+              - img [ref=e122]
+              - generic [ref=e125]: Agent
+              - img [ref=e127]
+            - link "AI Gateway" [ref=e129] [cursor=pointer]:
+              - /url: /memeflyflys-projects/fcomp/ai-gateway
+              - img [ref=e131]
+              - generic [ref=e134]: AI Gateway
+              - img [ref=e136]
+            - link "Sandboxes" [ref=e138] [cursor=pointer]:
+              - /url: /memeflyflys-projects/fcomp/sandboxes
+              - img [ref=e140]
+              - generic [ref=e143]: Sandboxes
+            - separator [ref=e144]
+            - link "Usage" [ref=e145] [cursor=pointer]:
+              - /url: /memeflyflys-projects/fcomp/usage
+              - img [ref=e147]
+              - generic [ref=e150]: Usage
+            - link "Support" [ref=e151] [cursor=pointer]:
+              - /url: /memeflyflys-projects/fcomp/support
+              - img [ref=e153]
+              - generic [ref=e156]: Support
+            - link "Settings" [ref=e157] [cursor=pointer]:
+              - /url: /memeflyflys-projects/fcomp/settings
+              - img [ref=e159]
+              - generic [ref=e162]: Settings
+              - img [ref=e164]
+        - generic [ref=e168]:
+          - button "Avatar for 1624318455 1624318455" [disabled]:
+            - img "Avatar for 1624318455":
+              - img "Avatar for 1624318455"
+            - generic:
+              - generic: "1624318455"
+            - generic:
+              - img
+          - img [ref=e171]
+      - button [ref=e174] [cursor=pointer]:
+        - img [ref=e175]
+    - generic [ref=e178]:
+      - generic [ref=e179]:
+        - generic [ref=e182]:
+          - link "fcomp" [ref=e183] [cursor=pointer]:
+            - /url: /memeflyflys-projects/fcomp
+            - generic [ref=e186]: fcomp
+          - button [ref=e187] [cursor=pointer]:
+            - img [ref=e189]
+          - link "Back to team view" [ref=e193] [cursor=pointer]:
+            - /url: /memeflyflys-projects
+            - img [ref=e195]
+        - generic [ref=e198]: Overview
+        - button "Open page actions menu" [ref=e200] [cursor=pointer]:
+          - img [ref=e202]
+      - generic [ref=e206]:
+        - generic [ref=e211]:
+          - heading "Production Deployment" [level=3] [ref=e213]
+          - generic [ref=e227]:
+            - generic [ref=e230]:
+              - term [ref=e231]: Deployment
+              - definition [ref=e232]
+            - generic [ref=e237]:
+              - term [ref=e238]:
+                - generic [ref=e240]:
+                  - text: Domains
+                  - link [ref=e241] [cursor=pointer]:
+                    - /url: /memeflyflys-projects/fcomp/settings/domains
+                    - img [ref=e242]
+              - definition [ref=e244]
+            - generic [ref=e246]:
+              - generic [ref=e247]:
+                - term [ref=e248]: Status
+                - definition [ref=e249]
+              - generic [ref=e252]:
+                - term [ref=e253]: Created
+                - definition [ref=e254]
+            - generic [ref=e257]:
+              - term [ref=e258]: Source
+              - definition [ref=e259]
+          - button "Deployment Settings" [ref=e265] [cursor=pointer]:
+            - generic [ref=e266]:
+              - img [ref=e267]
+              - generic [ref=e270]: Deployment Settings
+        - generic [ref=e279]:
+          - generic [ref=e280]:
+            - generic [ref=e281]:
+              - generic [ref=e282]:
+                - paragraph [ref=e283]:
+                  - strong [ref=e284]: Production Checklist
+                - generic [ref=e286]: 1/5
+              - button "Go to page" [ref=e287] [cursor=pointer]:
+                - img [ref=e289]
+              - button [ref=e291] [cursor=pointer]
+            - generic [ref=e295]:
+              - button "Connect Git Repository" [ref=e296] [cursor=pointer]:
+                - img [ref=e297]
+                - generic [ref=e299]: Connect Git Repository
+                - img [ref=e300]
+              - button "Add Custom Domain" [ref=e302] [cursor=pointer]:
+                - img [ref=e303]
+                - generic [ref=e305]: Add Custom Domain
+              - button "Preview Deployment" [ref=e306] [cursor=pointer]:
+                - img [ref=e307]
+                - generic [ref=e309]: Preview Deployment
+              - button "Enable Web Analytics" [ref=e310] [cursor=pointer]:
+                - img [ref=e311]
+                - generic [ref=e313]: Enable Web Analytics
+              - button "Enable Speed Insights" [ref=e314] [cursor=pointer]:
+                - img [ref=e315]
+                - generic [ref=e317]: Enable Speed Insights
+          - generic [ref=e318]:
+            - generic [ref=e319]:
+              - generic [ref=e320]:
+                - paragraph [ref=e321]:
+                  - strong [ref=e322]: Observability
+                - time [ref=e323]: 6h
+              - link "Go to page" [ref=e324] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e326]
+              - link [ref=e328] [cursor=pointer]:
+                - /url: "#"
+            - generic [ref=e330]:
+              - generic [ref=e332]: Edge Requests
+              - generic [ref=e337]: Function Invocations
+              - generic [ref=e342]: Error Rate
+          - generic [ref=e348]:
+            - paragraph [ref=e349]:
+              - strong [ref=e350]: Analytics
+            - time [ref=e351]: 1w
+        - generic [ref=e365]:
+          - img [ref=e368]
+          - img [ref=e379]
+          - img [ref=e390]
+          - img [ref=e401]
+          - generic [ref=e410]:
+            - img [ref=e413]
+            - img [ref=e424]
+            - img [ref=e435]
+            - img [ref=e446]
+            - img [ref=e457]
+            - img [ref=e468]

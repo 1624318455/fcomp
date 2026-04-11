@@ -153,6 +153,21 @@
       }
     });
     
+    // 有文件时禁止点击触发上传
+    fileInput.addEventListener('click', function(e) {
+      if (dropZone.classList.contains('has-file')) {
+        e.stopPropagation();
+      }
+    });
+    
+    // 拖放区域点击禁止（有文件时）
+    dropZone.addEventListener('click', function(e) {
+      if (dropZone.classList.contains('has-file')) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+    
     // 清除按钮点击
     var clearBtn = document.getElementById(side === 'source' ? 'source-clear-btn' : 'target-clear-btn');
     if (clearBtn) {
