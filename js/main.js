@@ -90,6 +90,35 @@
   // ========================================
   
   /**
+   * 清除差异结果并恢复原始编辑状态
+   * 当用户在显示差异的面板上再次输入时调用
+   * @param {HTMLElement} panel - 面板元素
+   * @param {string} side - 'source' 或 'target'
+   */
+  function clearDiffAndRestoreEdit(panel, side) {
+    var codeContent = panel.querySelector('.code-content');
+    var lineNumbers = panel.querySelector('.line-numbers');
+    var stateKey = side === 'source' ? 'sourceContent' : 'targetContent';
+    
+    // 恢复原始内容
+    codeContent.textContent = state[stateKey] || '';
+    
+    // 清除行号
+    lineNumbers.innerHTML = '';
+    
+    // 清除差异摘要
+    var summaryList = document.getElementById('diff-summary-list');
+    if (summaryList) summaryList.innerHTML = '';
+    document.getElementById('stat-total').textContent = '0';
+    document.getElementById('stat-added').textContent = '0';
+    document.getElementById('stat-removed').textContent = '0';
+    document.getElementById('stat-modified').textContent = '0';
+    
+    // 清除差异结果状态
+    state.diffResult = null;
+  }
+
+  /**
    * 初始化应用
    */
   function init() {
@@ -183,7 +212,18 @@
       state.sourceContent = e.target.textContent;
     });
     
+    // 检测用户输入时清除差异结果，恢复原始编辑状态
+    elements.sourceCodeContent.addEventListener('input', function(e) {
+      if (state.diffResult) {
+        clearDiffAndRestoreEdit(elements.sourcePanel, 'source');
+      }
+      state.sourceContent = e.target.textContent;
+    });
+    
     elements.targetCodeContent.addEventListener('input', function(e) {
+      if (state.diffResult) {
+        clearDiffAndRestoreEdit(elements.targetPanel, 'target');
+      }
       state.targetContent = e.target.textContent;
     });
     
@@ -259,10 +299,19 @@
   /**
    * 处理粘贴事件
    * @param {Event} e - 粘贴事件对象
-    */
+     */
   function handlePaste(e) {
     // 延迟处理，确保粘贴完成
     setTimeout(function() {
+      // 检测差异结果是否存在，存在则清除
+      if (state.diffResult) {
+        if (e.target === elements.sourceCodeContent) {
+          clearDiffAndRestoreEdit(elements.sourcePanel, 'source');
+        } else if (e.target === elements.targetCodeContent) {
+          clearDiffAndRestoreEdit(elements.targetPanel, 'target');
+        }
+      }
+      
       // 使用 textContent 保留原始格式，包括空行
       var sourceText = elements.sourceCodeContent.textContent;
       var targetText = elements.targetCodeContent.textContent;
