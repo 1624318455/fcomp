@@ -150,6 +150,101 @@ const UIRenderer = (function() {
   }
 
   /**
+   * 渲染对比结果摘要到可点击列表
+   * @param {Object} diffResult - 差异结果对象
+   */
+  function renderDiffSummary(diffResult) {
+    var summaryContainer = document.getElementById('diff-summary-list');
+    if (!summaryContainer) return;
+    
+    summaryContainer.innerHTML = '';
+    
+    var stats = diffResult.stats || {};
+    var sourceLines = diffResult.source || [];
+    var targetLines = diffResult.target || [];
+    
+    // 收集所有差异项
+    var diffItems = [];
+    
+    sourceLines.forEach(function(line, index) {
+      if (line.type === 'removed' || line.type === 'modified') {
+        diffItems.push({
+          type: line.type,
+          lineNum: index + 1,
+          side: 'source',
+          content: line.content
+        });
+      }
+    });
+    
+    targetLines.forEach(function(line, index) {
+      if (line.type === 'added' || line.type === 'modified') {
+        diffItems.push({
+          type: line.type,
+          lineNum: index + 1,
+          side: 'target',
+          content: line.content
+        });
+      }
+    });
+    
+    // 限制显示数量
+    var maxItems = 20;
+    var displayItems = diffItems.slice(0, maxItems);
+    
+    displayItems.forEach(function(item) {
+      var itemEl = document.createElement('div');
+      itemEl.className = 'diff-summary-item-clickable ' + item.type;
+      itemEl.dataset.lineNum = item.lineNum;
+      itemEl.dataset.side = item.side;
+      
+      var typeLabel = item.type === 'added' ? '新增' : (item.type === 'removed' ? '删除' : '修改');
+      var contentPreview = item.content ? item.content.substring(0, 30) : '(空行)';
+      if (item.content && item.content.length > 30) {
+        contentPreview += '...';
+      }
+      
+      itemEl.innerHTML = '<span class="stat-dot stat-dot-' + item.type + '"></span>' +
+        '第' + item.lineNum + '行 (' + typeLabel + ')';
+      
+      itemEl.addEventListener('click', function() {
+        scrollToLine(item.side, item.lineNum);
+      });
+      
+      summaryContainer.appendChild(itemEl);
+    });
+    
+    if (diffItems.length > maxItems) {
+      var moreEl = document.createElement('div');
+      moreEl.className = 'diff-summary-item-clickable';
+      moreEl.style.backgroundColor = 'var(--color-gray-100)';
+      moreEl.textContent = '还有 ' + (diffItems.length - maxItems) + ' 处...';
+      summaryContainer.appendChild(moreEl);
+    }
+  }
+
+  /**
+   * 滚动到指定行
+   * @param {string} side - 'source' 或 'target'
+   * @param {number} lineNum - 行号
+   */
+  function scrollToLine(side, lineNum) {
+    var containerId = side === 'source' ? 'source-code-content' : 'target-code-content';
+    var container = document.getElementById(containerId);
+    if (!container) return;
+    
+    var lines = container.querySelectorAll('.diff-line');
+    if (lines[lineNum - 1]) {
+      lines[lineNum - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // 高亮一下
+      lines[lineNum - 1].style.outline = '2px solid var(--color-primary)';
+      setTimeout(function() {
+        lines[lineNum - 1].style.outline = '';
+      }, 2000);
+    }
+  }
+
+  /**
    * 清除面板内容
    * @param {HTMLElement} panel - 面板元素
    */
@@ -228,6 +323,8 @@ const UIRenderer = (function() {
     renderDiff: renderDiff,
     renderLines: renderLines,
     updateStats: updateStats,
+    renderDiffSummary: renderDiffSummary,
+    scrollToLine: scrollToLine,
     clearPanel: clearPanel,
     clearBothPanels: clearBothPanels,
     setFileName: setFileName,

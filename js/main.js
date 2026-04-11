@@ -178,13 +178,13 @@
       handleFileSelect(e, 'target');
     });
     
-    // 文本编辑区输入（支持粘贴）
+    // 文本编辑区输入（支持粘贴）- 使用 textContent 保留空行
     elements.sourceCodeContent.addEventListener('input', function(e) {
-      state.sourceContent = e.target.innerText;
+      state.sourceContent = e.target.textContent;
     });
     
     elements.targetCodeContent.addEventListener('input', function(e) {
-      state.targetContent = e.target.innerText;
+      state.targetContent = e.target.textContent;
     });
     
     // 粘贴事件
@@ -259,12 +259,13 @@
   /**
    * 处理粘贴事件
    * @param {Event} e - 粘贴事件对象
-   */
+    */
   function handlePaste(e) {
     // 延迟处理，确保粘贴完成
     setTimeout(function() {
-      var sourceText = elements.sourceCodeContent.innerText;
-      var targetText = elements.targetCodeContent.innerText;
+      // 使用 textContent 保留原始格式，包括空行
+      var sourceText = elements.sourceCodeContent.textContent;
+      var targetText = elements.targetCodeContent.textContent;
       
       // 更新状态
       state.sourceContent = sourceText;
@@ -278,6 +279,14 @@
         elements.targetFileName.innerHTML = '<span class="file-name-placeholder">粘贴内容</span>';
       }
     }, 0);
+  }
+
+  /**
+   * 获取面板内容的统一方法
+   * 保留原始格式，包括空行
+   */
+  function getPanelContent(element) {
+    return element.textContent || element.innerText || '';
   }
 
   /**
@@ -307,6 +316,9 @@
         // 渲染结果
         UIRenderer.renderDiff(elements.sourcePanel, elements.targetPanel, diffResult);
         
+        // 渲染对比结果摘要
+        UIRenderer.renderDiffSummary(diffResult);
+        
         // 保存结果到状态
         state.diffResult = diffResult;
         
@@ -327,49 +339,52 @@
    * 清空左侧面板
    */
   function handleClearLeft() {
-    if (state.sourceContent && !window.confirm('确定要清空左侧内容吗？')) {
-      return;
+    if (state.sourceContent) {
+      elements.sourceCodeContent.textContent = '';
+      state.sourceContent = '';
+      state.sourceFileName = '';
+      elements.sourceFileName.innerHTML = '<span class="file-name-placeholder">未选择文件</span>';
+      UIRenderer.clearPanel(elements.sourcePanel);
+      showToast('左侧已清空', 'info');
     }
-    
-    state.sourceContent = '';
-    state.sourceFileName = '';
-    
-    UIRenderer.clearPanel(elements.sourcePanel);
-    UIRenderer.setFileName(elements.sourcePanel, '');
   }
 
   /**
    * 清空右侧面板
    */
   function handleClearRight() {
-    if (state.targetContent && !window.confirm('确定要清空右侧内容吗？')) {
-      return;
+    if (state.targetContent) {
+      elements.targetCodeContent.textContent = '';
+      state.targetContent = '';
+      state.targetFileName = '';
+      elements.targetFileName.innerHTML = '<span class="file-name-placeholder">未选择文件</span>';
+      UIRenderer.clearPanel(elements.targetPanel);
+      showToast('右侧已清空', 'info');
     }
-    
-    state.targetContent = '';
-    state.targetFileName = '';
-    
-    UIRenderer.clearPanel(elements.targetPanel);
-    UIRenderer.setFileName(elements.targetPanel, '');
   }
 
   /**
-   * 清空全部面板
+   * 清空所有面板
    */
   function handleClearAll() {
-    if ((state.sourceContent || state.targetContent) && !window.confirm('确定要清空所有内容吗？')) {
-      return;
-    }
-    
+    elements.sourceCodeContent.textContent = '';
+    elements.targetCodeContent.textContent = '';
     state.sourceContent = '';
     state.targetContent = '';
     state.sourceFileName = '';
     state.targetFileName = '';
     state.diffResult = null;
-    
+    elements.sourceFileName.innerHTML = '<span class="file-name-placeholder">未选择文件</span>';
+    elements.targetFileName.innerHTML = '<span class="file-name-placeholder">未选择文件</span>';
     UIRenderer.clearBothPanels(elements.sourcePanel, elements.targetPanel);
-    UIRenderer.setFileName(elements.sourcePanel, '');
-    UIRenderer.setFileName(elements.targetPanel, '');
+    // 清空对比结果摘要
+    var summaryList = document.getElementById('diff-summary-list');
+    if (summaryList) summaryList.innerHTML = '';
+    document.getElementById('stat-total').textContent = '0';
+    document.getElementById('stat-added').textContent = '0';
+    document.getElementById('stat-removed').textContent = '0';
+    document.getElementById('stat-modified').textContent = '0';
+    showToast('已清空所有内容', 'info');
   }
 
   /**
@@ -377,45 +392,15 @@
    * @param {Event} e - 键盘事件
    */
   function handleKeyDown(e) {
-    // Ctrl+Enter 执行比对
+    // Ctrl+Enter 开始比对
     if (e.ctrlKey && e.key === 'Enter') {
       e.preventDefault();
       handleCompare();
     }
-    
-    // Ctrl+Shift+Delete 清空全部
-    if (e.ctrlKey && e.shiftKey && e.key === 'Delete') {
-      e.preventDefault();
-      handleClearAll();
-    }
   }
 
-  // ========================================
-  // 辅助函数
-  // ========================================
-  
-  /**
-   * 检查 jsdiff 是否加载
-   */
-  function checkJsDiffLoaded() {
-    if (typeof Diff === 'undefined') {
-      showToast('错误：jsdiff 库加载失败，请检查网络连接后刷新页面重试。', 'error');
-      elements.compareBtn.disabled = true;
-      return false;
-    }
-    return true;
-  }
-
-  // ========================================
-  // 启动
-  // ========================================
-  
-  // DOM 加载完成后初始化
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  // 初始化应用
+  init();
 
 })();
 

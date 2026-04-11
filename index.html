@@ -18,6 +18,13 @@
       <div class="header-left">
         <h1 class="logo">FComp</h1>
         <span class="logo-subtitle">文件比对工具</span>
+        <button type="button" class="btn-primary btn-compare" id="compare-btn" aria-label="开始比对">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          开始比对
+        </button>
       </div>
       <div class="header-right">
         <label class="switch">
@@ -116,38 +123,28 @@
         </section>
       </div>
 
-      <!-- Compare Button -->
-      <div class="compare-action">
-        <button type="button" class="btn-primary btn-compare" id="compare-btn" aria-label="开始比对">
-          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          开始比对
-        </button>
+      <!-- Diff Results Summary -->
+      <div class="diff-summary" id="diff-summary">
+        <span class="diff-summary-title">对比结果：</span>
+        <span class="diff-summary-item" id="diff-summary-total">
+          <span class="stat-dot stat-dot-total"></span>
+          <span class="stat-value" id="stat-total">0</span> 处差异
+        </span>
+        <span class="diff-summary-item" id="diff-summary-added">
+          <span class="stat-dot stat-dot-added"></span>
+          <span class="stat-value" id="stat-added">0</span> 新增
+        </span>
+        <span class="diff-summary-item" id="diff-summary-removed">
+          <span class="stat-dot stat-dot-removed"></span>
+          <span class="stat-value" id="stat-removed">0</span> 删除
+        </span>
+        <span class="diff-summary-item" id="diff-summary-modified">
+          <span class="stat-dot stat-dot-modified"></span>
+          <span class="stat-value" id="stat-modified">0</span> 修改
+        </span>
+        <div class="diff-summary-list" id="diff-summary-list"></div>
       </div>
     </main>
-
-    <!-- Footer -->
-    <footer class="stats-bar" role="status" aria-live="polite">
-      <span class="stat-item">
-        <span class="stat-dot stat-dot-total"></span>
-        <span class="stat-value" id="stat-total">0</span> 处差异
-      </span>
-      <span class="stat-item">
-        <span class="stat-dot stat-dot-added"></span>
-        <span class="stat-value" id="stat-added">0</span> 新增
-      </span>
-      <span class="stat-item">
-        <span class="stat-dot stat-dot-removed"></span>
-        <span class="stat-value" id="stat-removed">0</span> 删除
-      </span>
-      <span class="stat-item">
-        <span class="stat-dot stat-dot-modified"></span>
-        <span class="stat-value" id="stat-modified">0</span> 修改
-      </span>
-    </footer>
-  </div>
 
   <!-- Modules -->
   <script src="js/file-handler.js"></script>

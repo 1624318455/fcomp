@@ -151,8 +151,8 @@ body {
 
 .header-left {
   display: flex;
-  align-items: baseline;
-  gap: var(--space-3);
+  align-items: center;
+  gap: var(--space-4);
 }
 
 .logo {
@@ -165,6 +165,11 @@ body {
 .logo-subtitle {
   font-size: 14px;
   color: var(--color-text-secondary);
+}
+
+/* Header 内的比对按钮 */
+.header .btn-compare {
+  margin-left: 16px;
 }
 
 .header-right {
@@ -950,4 +955,74 @@ body {
     transform: translateX(100%);
     opacity: 0;
   }
+}
+
+/* ========================================
+   对比结果摘要区
+   ======================================== */
+.diff-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 12px 24px;
+  background-color: var(--color-bg-header);
+  border-top: 1px solid var(--color-border);
+  min-height: 48px;
+}
+
+.diff-summary-title {
+  font-weight: 500;
+  color: var(--color-text-body);
+}
+
+.diff-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.diff-summary-item .stat-value {
+  font-weight: 600;
+  color: var(--color-text-body);
+}
+
+.diff-summary-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+  max-width: 60%;
+}
+
+.diff-summary-item-clickable {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  background-color: var(--color-bg-page);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.diff-summary-item-clickable:hover {
+  background-color: var(--color-primary-lighter);
+  border-color: var(--color-primary);
+}
+
+.diff-summary-item-clickable.added {
+  border-left: 3px solid var(--color-added-border);
+}
+
+.diff-summary-item-clickable.removed {
+  border-left: 3px solid var(--color-removed-border);
+}
+
+.diff-summary-item-clickable.modified {
+  border-left: 3px solid var(--color-modified-border);
 }
