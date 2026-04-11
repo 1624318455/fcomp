@@ -297,42 +297,31 @@
 
   /**
    * 处理粘贴事件
-   * 完全接管粘贴逻辑，确保格式不被改变
+   * 阻止默认行为，手动获取剪贴板数据并以正确格式插入
    * @param {Event} e - 粘贴事件对象
    */
   function handlePaste(e) {
-    // 立即阻止浏览器默认粘贴行为
-    e.preventDefault();
-    
     // 获取剪贴板数据
     var clipboardData = e.clipboardData || window.clipboardData;
     if (!clipboardData) return;
     
-    // 优先获取纯文本（保留原始格式）
+    // 获取粘贴的纯文本
     var pastedText = '';
-    if (clipboardData.types && clipboardData.types.includes('text/plain')) {
-      pastedText = clipboardData.getData('text/plain');
-    } else if (clipboardData.getData) {
-      // 尝试多种格式
-      pastedText = clipboardData.getData('text/plain') || 
-                   clipboardData.getData('text') ||
-                   clipboardData.getData('Text');
+    if (clipboardData.types) {
+      if (clipboardData.types.includes('text/plain')) {
+        pastedText = clipboardData.getData('text/plain');
+      } else if (clipboardData.types.includes('text/html')) {
+        pastedText = clipboardData.getData('text/plain');
+      }
+    }
+    if (!pastedText && clipboardData.getData) {
+      pastedText = clipboardData.getData('text/plain') || clipboardData.getData('text');
     }
     
-    // 如果仍然获取不到，使用空字符串（让用户手动处理）
-    if (!pastedText && pastedText !== '') {
-      // 最后尝试：读取剪贴板中的所有可用数据
-      try {
-        for (var i = 0; i < clipboardData.items.length; i++) {
-          var item = clipboardData.items[i];
-          if (item.kind === 'string' && item.type === 'text/plain') {
-            pastedText = item.getAsString();
-            break;
-          }
-        }
-      } catch (err) {
-        // 忽略错误
-      }
+    // 如果获取失败，提示用户
+    if (!pastedText) {
+      showToast('粘贴失败，请尝试使用 Ctrl+Shift+V 或右键粘贴', 'warning');
+      return;
     }
     
     // 获取目标面板
@@ -348,104 +337,78 @@
     
     var targetEl = targetPanel === 'source' ? elements.sourceCodeContent : elements.targetCodeContent;
     
-    // 如果获取到了文本，用正确格式插入
-    if (pastedText) {
-      // 在光标位置插入内容
-      insertTextAtCursor(targetEl, pastedText);
-    }
+    // 获取当前光标位置（用于在正确位置插入）
+    var selection = window.getSelection();
+    var cursorPosition = getCursorPosition(targetEl);
+    
+    // 获取当前内容，在光标位置插入新文本
+    var currentContent = getPanelContent(targetEl);
+    var before = currentContent.substring(0, cursorPosition);
+    var after = currentContent.substring(cursorPosition);
+    var newContent = before + pastedText + after;
+    
+    // 用正确格式设置内容
+    setPanelContent(targetEl, newContent);
     
     // 更新状态
     var stateKey = targetPanel === 'source' ? 'sourceContent' : 'targetContent';
-    state[stateKey] = getPanelContent(targetEl);
+    state[stateKey] = newContent;
     
     // 更新文件名显示
     var fileNameEl = targetPanel === 'source' ? elements.sourceFileName : elements.targetFileName;
-    if (!state[targetPanel === 'source' ? 'sourceFileName' : 'targetFileName'] && pastedText) {
+    if (!state[targetPanel === 'source' ? 'sourceFileName' : 'targetFileName'] && newContent) {
       fileNameEl.innerHTML = '<span class="file-name-placeholder">粘贴内容</span>';
     }
+    
+    // 阻止浏览器默认粘贴（我们已经手动处理了）
+    e.preventDefault();
   }
   
   /**
-   * 在光标位置插入文本（保留格式）
+   * 获取光标在元素中的字符位置
    * @param {HTMLElement} element - 目标元素
-   * @param {string} text - 要插入的文本
+   * @returns {number} 光标位置
    */
-  function insertTextAtCursor(element, text) {
-    // 保存当前选择
+  function getCursorPosition(element) {
     var selection = window.getSelection();
-    if (!selection.rangeCount) {
-      // 如果没有选择，先创建范围
-      var range = document.createRange();
-      range.selectNodeContents(element);
-      range.collapse(false);
-      selection.addRange(range);
-    }
+    if (!selection.rangeCount) return getPanelContent(element).length;
     
     var range = selection.getRangeAt(0);
-    var startContainer = range.startContainer;
-    var startOffset = range.startOffset;
+    var preCaretRange = range.cloneRange();
+    preCaretRange.selectNodeContents(element);
+    preCaretRange.setEnd(range.endContainer, range.endOffset);
     
-    // 记录插入前的状态
-    var wasEmpty = element.innerHTML === '' || element.innerHTML === '<br>';
-    var hadSelection = startContainer.nodeType === Node.TEXT_NODE && startOffset > 0;
+    // 计算位置（需要考虑换行）
+    var tempDiv = document.createElement('div');
+    tempDiv.appendChild(preCaretRange.cloneContents());
+    var tempContent = tempDiv.textContent || '';
     
-    // 删除选中的内容
-    range.deleteContents();
+    // 找到对应的字符位置
+    var fullContent = getPanelContent(element);
+    var result = 0;
+    var charCount = 0;
+    var divCount = 0;
     
-    // 如果在文本节点中间，需要分割节点
-    if (startContainer.nodeType === Node.TEXT_NODE) {
-      var beforeText = startContainer.textContent.substring(0, startOffset);
-      var afterText = startContainer.textContent.substring(startOffset);
-      
-      // 创建新的div容器
-      var fragment = document.createDocumentFragment();
-      
-      // 处理粘贴文本：每行一个div
-      var lines = text.split('\n');
-      var firstDiv = document.createElement('div');
-      firstDiv.textContent = beforeText + (lines[0] || '');
-      fragment.appendChild(firstDiv);
-      
-      // 中间行
-      for (var i = 1; i < lines.length - 1; i++) {
-        var div = document.createElement('div');
-        div.textContent = lines[i];
-        fragment.appendChild(div);
-      }
-      
-      // 最后一行（如果有的话）
-      if (lines.length > 1) {
-        var lastDiv = document.createElement('div');
-        lastDiv.textContent = lines[lines.length - 1] + afterText;
-        fragment.appendChild(lastDiv);
-      } else if (afterText) {
-        // 单行情况
-        firstDiv.textContent = beforeText + text + afterText;
-      }
-      
-      // 插入片段
-      range.insertNode(fragment);
-      
-      // 移动光标到末尾
-      range.collapse(false);
-      selection.removeAllRanges();
-      selection.addRange(range);
-    } else {
-      // 在元素节点中插入
-      var fragment = document.createDocumentFragment();
-      var lines = text.split('\n');
-      
-      for (var i = 0; i < lines.length; i++) {
-        var div = document.createElement('div');
-        div.textContent = lines[i];
-        fragment.appendChild(div);
-      }
-      
-      range.insertNode(fragment);
-      range.collapse(false);
-      selection.removeAllRanges();
-      selection.addRange(range);
+    for (var i = 0; i < fullContent.length; i++) {
+      if (charCount >= tempContent.length) break;
+      if (fullContent[i] === '\n') divCount++;
+      charCount++;
     }
+    
+    // 简单方案：计算到当前行为止的字符数
+    var beforeRange = document.createRange();
+    beforeRange.selectNodeContents(element);
+    beforeRange.setEnd(range.endContainer, range.endOffset);
+    
+    var tempContainer = document.createElement('div');
+    tempContainer.appendChild(beforeRange.cloneContents());
+    
+    // 计算行数
+    var tempText = tempContainer.textContent || '';
+    var lines = tempText.split('\n');
+    result = lines.join('\n').length;
+    
+    return result;
   }
   
   /**
