@@ -297,25 +297,48 @@
 
   /**
    * 处理粘贴事件
-   * 必须在浏览器默认行为之前拦截，阻止空白字符规范化
+   * 完全接管粘贴逻辑，确保格式不被改变
    * @param {Event} e - 粘贴事件对象
    */
   function handlePaste(e) {
+    // 立即阻止浏览器默认粘贴行为
+    e.preventDefault();
+    
     // 获取剪贴板数据
     var clipboardData = e.clipboardData || window.clipboardData;
     if (!clipboardData) return;
     
-    // 获取粘贴的纯文本内容
-    var pastedText = clipboardData.getData('text/plain') || clipboardData.getData('text');
-    if (!pastedText) return;
+    // 优先获取纯文本（保留原始格式）
+    var pastedText = '';
+    if (clipboardData.types && clipboardData.types.includes('text/plain')) {
+      pastedText = clipboardData.getData('text/plain');
+    } else if (clipboardData.getData) {
+      // 尝试多种格式
+      pastedText = clipboardData.getData('text/plain') || 
+                   clipboardData.getData('text') ||
+                   clipboardData.getData('Text');
+    }
+    
+    // 如果仍然获取不到，使用空字符串（让用户手动处理）
+    if (!pastedText && pastedText !== '') {
+      // 最后尝试：读取剪贴板中的所有可用数据
+      try {
+        for (var i = 0; i < clipboardData.items.length; i++) {
+          var item = clipboardData.items[i];
+          if (item.kind === 'string' && item.type === 'text/plain') {
+            pastedText = item.getAsString();
+            break;
+          }
+        }
+      } catch (err) {
+        // 忽略错误
+      }
+    }
     
     // 获取目标面板
     var targetPanel = e.target === elements.sourceCodeContent ? 'source' : 
                       (e.target === elements.targetCodeContent ? 'target' : null);
     if (!targetPanel) return;
-    
-    // 阻止浏览器默认粘贴行为
-    e.preventDefault();
     
     // 如果有差异结果，先恢复编辑状态
     if (state.diffResult) {
@@ -323,18 +346,105 @@
       clearDiffAndRestoreEdit(panelEl, targetPanel);
     }
     
-    // 以正确格式插入内容（每行一个div，保留空行）
     var targetEl = targetPanel === 'source' ? elements.sourceCodeContent : elements.targetCodeContent;
-    setPanelContent(targetEl, pastedText);
+    
+    // 如果获取到了文本，用正确格式插入
+    if (pastedText) {
+      // 在光标位置插入内容
+      insertTextAtCursor(targetEl, pastedText);
+    }
     
     // 更新状态
     var stateKey = targetPanel === 'source' ? 'sourceContent' : 'targetContent';
-    state[stateKey] = pastedText;
+    state[stateKey] = getPanelContent(targetEl);
     
     // 更新文件名显示
     var fileNameEl = targetPanel === 'source' ? elements.sourceFileName : elements.targetFileName;
     if (!state[targetPanel === 'source' ? 'sourceFileName' : 'targetFileName'] && pastedText) {
       fileNameEl.innerHTML = '<span class="file-name-placeholder">粘贴内容</span>';
+    }
+  }
+  
+  /**
+   * 在光标位置插入文本（保留格式）
+   * @param {HTMLElement} element - 目标元素
+   * @param {string} text - 要插入的文本
+   */
+  function insertTextAtCursor(element, text) {
+    // 保存当前选择
+    var selection = window.getSelection();
+    if (!selection.rangeCount) {
+      // 如果没有选择，先创建范围
+      var range = document.createRange();
+      range.selectNodeContents(element);
+      range.collapse(false);
+      selection.addRange(range);
+    }
+    
+    var range = selection.getRangeAt(0);
+    var startContainer = range.startContainer;
+    var startOffset = range.startOffset;
+    
+    // 记录插入前的状态
+    var wasEmpty = element.innerHTML === '' || element.innerHTML === '<br>';
+    var hadSelection = startContainer.nodeType === Node.TEXT_NODE && startOffset > 0;
+    
+    // 删除选中的内容
+    range.deleteContents();
+    
+    // 如果在文本节点中间，需要分割节点
+    if (startContainer.nodeType === Node.TEXT_NODE) {
+      var beforeText = startContainer.textContent.substring(0, startOffset);
+      var afterText = startContainer.textContent.substring(startOffset);
+      
+      // 创建新的div容器
+      var fragment = document.createDocumentFragment();
+      
+      // 处理粘贴文本：每行一个div
+      var lines = text.split('\n');
+      var firstDiv = document.createElement('div');
+      firstDiv.textContent = beforeText + (lines[0] || '');
+      fragment.appendChild(firstDiv);
+      
+      // 中间行
+      for (var i = 1; i < lines.length - 1; i++) {
+        var div = document.createElement('div');
+        div.textContent = lines[i];
+        fragment.appendChild(div);
+      }
+      
+      // 最后一行（如果有的话）
+      if (lines.length > 1) {
+        var lastDiv = document.createElement('div');
+        lastDiv.textContent = lines[lines.length - 1] + afterText;
+        fragment.appendChild(lastDiv);
+      } else if (afterText) {
+        // 单行情况
+        firstDiv.textContent = beforeText + text + afterText;
+      }
+      
+      // 插入片段
+      range.insertNode(fragment);
+      
+      // 移动光标到末尾
+      range.collapse(false);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    } else {
+      // 在元素节点中插入
+      var fragment = document.createDocumentFragment();
+      var lines = text.split('\n');
+      
+      for (var i = 0; i < lines.length; i++) {
+        var div = document.createElement('div');
+        div.textContent = lines[i];
+        fragment.appendChild(div);
+      }
+      
+      range.insertNode(fragment);
+      range.collapse(false);
+      selection.removeAllRanges();
+      selection.addRange(range);
     }
   }
   
@@ -365,45 +475,50 @@
 
   /**
    * 获取面板内容的统一方法
-   * 保留原始格式，包括空行
-   * 处理 contenteditable div 的特殊结构：换行在 DOM 中表现为 <div> 分隔
+   * 遍历所有子节点，收集文本内容，保持行结构
+   * @param {HTMLElement} element - 面板元素
+   * @returns {string} 面板的文本内容
    */
   function getPanelContent(element) {
     if (!element) return '';
     
-    // 获取子元素和文本节点
     var childNodes = element.childNodes;
     var lines = [];
     
     for (var i = 0; i < childNodes.length; i++) {
       var node = childNodes[i];
+      var nodeType = node.nodeType;
+      var nodeName = node.nodeName;
       
-      if (node.nodeType === Node.TEXT_NODE) {
-        // 文本节点：直接添加内容（可能包含换行符）
-        var text = node.textContent;
-        if (text) {
-          // 文本节点可能包含换行符，需要按换行分割
-          var textLines = text.split('\n');
-          textLines.forEach(function(t, idx) {
-            if (t || idx === 0) {
-              lines.push(t);
+      // 文本节点
+      if (nodeType === Node.TEXT_NODE) {
+        var text = node.textContent || '';
+        // 按换行分割
+        var parts = text.split('\n');
+        for (var j = 0; j < parts.length; j++) {
+          lines.push(parts[j]);
+        }
+      }
+      // 元素节点
+      else if (nodeType === Node.ELEMENT_NODE) {
+        // BR 标签：只添加一个空行标记
+        if (nodeName === 'BR') {
+          lines.push('');
+        }
+        // DIV 和 P：递归获取内容
+        else if (nodeName === 'DIV' || nodeName === 'P') {
+          var content = getPanelContent(node);
+          lines.push(content);
+        }
+        // 其他元素：直接获取文本
+        else {
+          var textContent = node.textContent || '';
+          if (textContent) {
+            var parts = textContent.split('\n');
+            for (var j = 0; j < parts.length; j++) {
+              lines.push(parts[j]);
             }
-          });
-        }
-      } else if (node.nodeName === 'DIV' || node.nodeName === 'P' || node.nodeName === 'BR') {
-        // 元素节点：如果不是 BR（BR 表示换行），则内容为一行
-        if (node.nodeName === 'BR') {
-          // BR 标签表示换行，但不需要额外处理（下一个元素就是新行）
-          continue;
-        }
-        // DIV 或 P：内容为一行
-        var content = node.textContent || '';
-        lines.push(content);
-      } else if (node.nodeType === Node.ELEMENT_NODE) {
-        // 其他元素：递归处理
-        var childContent = getPanelContent(node);
-        if (childContent) {
-          lines.push(childContent);
+          }
         }
       }
     }
