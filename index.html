@@ -123,26 +123,20 @@
         </section>
       </div>
 
-      <!-- Diff Results Summary -->
-      <div class="diff-summary" id="diff-summary">
-        <span class="diff-summary-title">对比结果：</span>
-        <span class="diff-summary-item" id="diff-summary-total">
-          <span class="stat-dot stat-dot-total"></span>
-          <span class="stat-value" id="stat-total">0</span> 处差异
-        </span>
-        <span class="diff-summary-item" id="diff-summary-added">
-          <span class="stat-dot stat-dot-added"></span>
-          <span class="stat-value" id="stat-added">0</span> 新增
-        </span>
-        <span class="diff-summary-item" id="diff-summary-removed">
-          <span class="stat-dot stat-dot-removed"></span>
-          <span class="stat-value" id="stat-removed">0</span> 删除
-        </span>
-        <span class="diff-summary-item" id="diff-summary-modified">
-          <span class="stat-dot stat-dot-modified"></span>
-          <span class="stat-value" id="stat-modified">0</span> 修改
-        </span>
-        <div class="diff-summary-list" id="diff-summary-list"></div>
+      <!-- Diff Results Panel -->
+      <div class="diff-results-panel" id="diff-results-panel">
+        <div class="diff-results-header">
+          <span class="diff-results-title">差异详情</span>
+          <span class="diff-results-stats">
+            <span class="stat-item"><span class="stat-dot stat-dot-added"></span><span id="stat-added">0</span> 新增</span>
+            <span class="stat-item"><span class="stat-dot stat-dot-removed"></span><span id="stat-removed">0</span> 删除</span>
+            <span class="stat-item"><span class="stat-dot stat-dot-modified"></span><span id="stat-modified">0</span> 修改</span>
+          </span>
+          <button type="button" class="btn-text" id="close-diff-panel" aria-label="关闭">×</button>
+        </div>
+        <div class="diff-results-content" id="diff-results-content">
+          <div class="diff-results-placeholder">点击"开始比对"查看差异结果</div>
+        </div>
       </div>
     </main>
 

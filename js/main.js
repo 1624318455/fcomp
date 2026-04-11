@@ -351,7 +351,7 @@
     return element.textContent || element.innerText || '';
   }
 
-  /**
+   /**
    * 处理比对
    */
   function handleCompare() {
@@ -375,17 +375,19 @@
         // 执行比对
         var diffResult = DiffEngine.compare(state.sourceContent, state.targetContent);
         
-        // 渲染结果
-        UIRenderer.renderDiff(elements.sourcePanel, elements.targetPanel, diffResult);
-        
-        // 渲染对比结果摘要
-        UIRenderer.renderDiffSummary(diffResult);
-        
         // 保存结果到状态
         state.diffResult = diffResult;
         
-        // 同步滚动位置
-        ScrollSync.syncScroll();
+        // 在独立的差异面板中显示结果（不覆盖原始内容）
+        renderDiffResultsPanel(diffResult);
+        
+        // 显示差异面板
+        var diffPanel = document.getElementById('diff-results-panel');
+        if (diffPanel) {
+          diffPanel.classList.add('active');
+        }
+        
+        showToast('比对完成，发现 ' + diffResult.stats.total + ' 处差异', 'info');
         
       } catch (error) {
         showToast('比对失败：' + error.message, 'error');
@@ -395,6 +397,94 @@
         UIRenderer.setLoadingState(elements.compareBtn, false);
       }
     }, 50);
+  }
+
+  /**
+   * 渲染差异结果到独立面板（不覆盖原始内容）
+   */
+  function renderDiffResultsPanel(diffResult) {
+    var contentEl = document.getElementById('diff-results-content');
+    if (!contentEl) return;
+    
+    var stats = diffResult.stats || { added: 0, removed: 0, modified: 0, total: 0 };
+    
+    // 更新统计
+    document.getElementById('stat-added').textContent = stats.added;
+    document.getElementById('stat-removed').textContent = stats.removed;
+    document.getElementById('stat-modified').textContent = stats.modified;
+    
+    // 清空并渲染差异列表
+    contentEl.innerHTML = '';
+    
+    var sourceLines = diffResult.source || [];
+    var targetLines = diffResult.target || [];
+    
+    var items = [];
+    
+    // 收集差异项
+    sourceLines.forEach(function(line, index) {
+      if (line.type === 'removed' || line.type === 'modified') {
+        items.push({
+          side: 'source',
+          lineNum: index + 1,
+          type: line.type,
+          content: line.content || '(空行)'
+        });
+      }
+    });
+    
+    targetLines.forEach(function(line, index) {
+      if (line.type === 'added' || line.type === 'modified') {
+        items.push({
+          side: 'target',
+          lineNum: index + 1,
+          type: line.type,
+          content: line.content || '(空行)'
+        });
+      }
+    });
+    
+    // 渲染差异项
+    if (items.length === 0) {
+      contentEl.innerHTML = '<div class="diff-results-placeholder">两份内容完全相同，无差异</div>';
+      return;
+    }
+    
+    items.forEach(function(item) {
+      var el = document.createElement('div');
+      el.className = 'diff-result-item ' + item.type;
+      
+      var typeLabel = item.type === 'added' ? '新增' : (item.type === 'removed' ? '删除' : '修改');
+      var sideLabel = item.side === 'source' ? '左侧' : '右侧';
+      
+      el.innerHTML = '<span class="diff-result-line">' + sideLabel + ' 第' + item.lineNum + '行</span>' +
+        '<span class="diff-result-content">' + escapeHtml(item.content) + '</span>';
+      
+      el.addEventListener('click', function() {
+        // 滚动到对应面板的对应行
+        var containerId = item.side === 'source' ? 'source-code-content' : 'target-code-content';
+        var container = document.getElementById(containerId);
+        if (container) {
+          container.scrollTop = 0;
+        }
+        showToast('已定位到 ' + sideLabel + ' 第' + item.lineNum + '行', 'info');
+      });
+      
+      contentEl.appendChild(el);
+    });
+  }
+
+  /**
+   * HTML 转义
+   */
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
   /**
