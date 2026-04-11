@@ -1,0 +1,12 @@
+- generic [ref=e3]:
+  - list [ref=e4]:
+    - listitem [ref=e5]:
+      - link "Main" [ref=e6] [cursor=pointer]:
+        - /url: /
+    - listitem [ref=e7]:
+      - link "Login" [ref=e8] [cursor=pointer]:
+        - /url: /login
+    - listitem [ref=e9]:
+      - link "Users" [ref=e10] [cursor=pointer]:
+        - /url: /users
+  - heading "Main Page" [level=1] [ref=e11]

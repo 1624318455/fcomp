@@ -100,8 +100,8 @@
     var lineNumbers = panel.querySelector('.line-numbers');
     var stateKey = side === 'source' ? 'sourceContent' : 'targetContent';
     
-    // 恢复原始内容
-    codeContent.textContent = state[stateKey] || '';
+    // 使用 setPanelContent 恢复原始内容（保持正确的 DOM 结构）
+    setPanelContent(codeContent, state[stateKey] || '');
     
     // 清除行号
     lineNumbers.innerHTML = '';
@@ -207,24 +207,19 @@
       handleFileSelect(e, 'target');
     });
     
-    // 文本编辑区输入（支持粘贴）- 使用 textContent 保留空行
-    elements.sourceCodeContent.addEventListener('input', function(e) {
-      state.sourceContent = e.target.textContent;
-    });
-    
-    // 检测用户输入时清除差异结果，恢复原始编辑状态
+    // 文本编辑区输入（支持粘贴）- 使用 getPanelContent 正确处理换行
     elements.sourceCodeContent.addEventListener('input', function(e) {
       if (state.diffResult) {
         clearDiffAndRestoreEdit(elements.sourcePanel, 'source');
       }
-      state.sourceContent = e.target.textContent;
+      state.sourceContent = getPanelContent(elements.sourceCodeContent);
     });
     
     elements.targetCodeContent.addEventListener('input', function(e) {
       if (state.diffResult) {
         clearDiffAndRestoreEdit(elements.targetPanel, 'target');
       }
-      state.targetContent = e.target.textContent;
+      state.targetContent = getPanelContent(elements.targetCodeContent);
     });
     
     // 粘贴事件
@@ -281,9 +276,9 @@
         UIRenderer.setFileName(elements.targetPanel, result.name);
       }
       
-      // 渲染内容
-      var panelEl = panel === 'source' ? elements.sourcePanel : elements.targetPanel;
-      UIRenderer.renderPlainText(panelEl, result.content);
+      // 渲染内容 - 使用 setPanelContent 保持正确的 DOM 结构
+      var codeContent = panel === 'source' ? elements.sourceCodeContent : elements.targetCodeContent;
+      setPanelContent(codeContent, result.content);
       
       // 同步滚动位置
       ScrollSync.syncScroll();
@@ -299,13 +294,13 @@
   /**
    * 处理粘贴事件
    * @param {Event} e - 粘贴事件对象
-     */
+   */
   function handlePaste(e) {
     // 延迟处理，确保粘贴完成
     setTimeout(function() {
-      // 先获取粘贴后的内容
-      var sourceText = elements.sourceCodeContent.textContent;
-      var targetText = elements.targetCodeContent.textContent;
+      // 使用 getPanelContent 正确获取带换行的内容
+      var sourceText = getPanelContent(elements.sourceCodeContent);
+      var targetText = getPanelContent(elements.targetCodeContent);
       
       // 如果有差异结果，需要先恢复编辑状态
       if (state.diffResult) {
@@ -320,11 +315,11 @@
         
         // 恢复用户新粘贴的内容
         if (currentTarget && e.target === elements.targetCodeContent) {
-          elements.targetCodeContent.textContent = currentTarget;
+          setPanelContent(elements.targetCodeContent, currentTarget);
           targetText = currentTarget;
         }
         if (currentSource && e.target === elements.sourceCodeContent) {
-          elements.sourceCodeContent.textContent = currentSource;
+          setPanelContent(elements.sourceCodeContent, currentSource);
           sourceText = currentSource;
         }
       }
@@ -342,13 +337,78 @@
       }
     }, 0);
   }
+  
+  /**
+   * 设置面板内容（处理 contenteditable div 的特殊结构）
+   * @param {HTMLElement} element - 面板元素
+   * @param {string} content - 要设置的内容
+   */
+  function setPanelContent(element, content) {
+    if (!element || !content) {
+      if (element) element.textContent = '';
+      return;
+    }
+    
+    // 按换行分割内容
+    var lines = content.split('\n');
+    
+    // 清空现有内容
+    element.innerHTML = '';
+    
+    // 为每一行创建 div 元素
+    lines.forEach(function(line, index) {
+      var div = document.createElement('div');
+      div.textContent = line;
+      element.appendChild(div);
+    });
+  }
 
   /**
    * 获取面板内容的统一方法
    * 保留原始格式，包括空行
+   * 处理 contenteditable div 的特殊结构：换行在 DOM 中表现为 <div> 分隔
    */
   function getPanelContent(element) {
-    return element.textContent || element.innerText || '';
+    if (!element) return '';
+    
+    // 获取子元素和文本节点
+    var childNodes = element.childNodes;
+    var lines = [];
+    
+    for (var i = 0; i < childNodes.length; i++) {
+      var node = childNodes[i];
+      
+      if (node.nodeType === Node.TEXT_NODE) {
+        // 文本节点：直接添加内容（可能包含换行符）
+        var text = node.textContent;
+        if (text) {
+          // 文本节点可能包含换行符，需要按换行分割
+          var textLines = text.split('\n');
+          textLines.forEach(function(t, idx) {
+            if (t || idx === 0) {
+              lines.push(t);
+            }
+          });
+        }
+      } else if (node.nodeName === 'DIV' || node.nodeName === 'P' || node.nodeName === 'BR') {
+        // 元素节点：如果不是 BR（BR 表示换行），则内容为一行
+        if (node.nodeName === 'BR') {
+          // BR 标签表示换行，但不需要额外处理（下一个元素就是新行）
+          continue;
+        }
+        // DIV 或 P：内容为一行
+        var content = node.textContent || '';
+        lines.push(content);
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        // 其他元素：递归处理
+        var childContent = getPanelContent(node);
+        if (childContent) {
+          lines.push(childContent);
+        }
+      }
+    }
+    
+    return lines.join('\n');
   }
 
    /**
@@ -492,7 +552,7 @@
    */
   function handleClearLeft() {
     if (state.sourceContent) {
-      elements.sourceCodeContent.textContent = '';
+      setPanelContent(elements.sourceCodeContent, '');
       state.sourceContent = '';
       state.sourceFileName = '';
       elements.sourceFileName.innerHTML = '<span class="file-name-placeholder">未选择文件</span>';
@@ -506,7 +566,7 @@
    */
   function handleClearRight() {
     if (state.targetContent) {
-      elements.targetCodeContent.textContent = '';
+      setPanelContent(elements.targetCodeContent, '');
       state.targetContent = '';
       state.targetFileName = '';
       elements.targetFileName.innerHTML = '<span class="file-name-placeholder">未选择文件</span>';
@@ -519,8 +579,8 @@
    * 清空所有面板
    */
   function handleClearAll() {
-    elements.sourceCodeContent.textContent = '';
-    elements.targetCodeContent.textContent = '';
+    setPanelContent(elements.sourceCodeContent, '');
+    setPanelContent(elements.targetCodeContent, '');
     state.sourceContent = '';
     state.targetContent = '';
     state.sourceFileName = '';
