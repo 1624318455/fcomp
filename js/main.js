@@ -8,6 +8,31 @@
   'use strict';
 
   // ========================================
+  // Toast 通知工具函数
+  // ========================================
+  
+  function showToast(message, type) {
+    type = type || 'info';
+    var container = document.getElementById('toast-container');
+    if (!container) return;
+    
+    var toast = document.createElement('div');
+    toast.className = 'toast toast-' + type;
+    toast.textContent = message;
+    
+    container.appendChild(toast);
+    
+    setTimeout(function() {
+      toast.style.animation = 'toastFadeOut 0.3s ease-out';
+      setTimeout(function() {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 300);
+    }, 3000);
+  }
+
+  // ========================================
   // 全局状态
   // ========================================
   
@@ -120,7 +145,7 @@
    */
   function checkJsDiffLoaded() {
     if (typeof Diff === 'undefined') {
-      alert('错误：jsdiff 库加载失败，请检查网络连接后刷新页面重试。');
+      showToast('错误：jsdiff 库加载失败，请检查网络连接后刷新页面重试。', 'error');
       elements.compareBtn.disabled = true;
       return false;
     }
@@ -224,7 +249,7 @@
       ScrollSync.syncScroll();
       
     } catch (error) {
-      alert('文件读取失败：' + error.message);
+      showToast('文件读取失败：' + error.message, 'error');
     }
     
     // 清除文件输入，以便再次选择同一文件
@@ -261,7 +286,7 @@
   function handleCompare() {
     // 检查输入
     if (!state.sourceContent && !state.targetContent) {
-      alert('请至少在一个面板中输入或上传文件内容');
+      showToast('请至少在一个面板中输入或上传文件内容', 'warning');
       return;
     }
     
@@ -289,7 +314,7 @@
         ScrollSync.syncScroll();
         
       } catch (error) {
-        alert('比对失败：' + error.message);
+        showToast('比对失败：' + error.message, 'error');
         console.error(error);
       } finally {
         state.isComparing = false;
@@ -374,7 +399,7 @@
    */
   function checkJsDiffLoaded() {
     if (typeof Diff === 'undefined') {
-      alert('错误：jsdiff 库加载失败，请检查网络连接后刷新页面重试。');
+      showToast('错误：jsdiff 库加载失败，请检查网络连接后刷新页面重试。', 'error');
       elements.compareBtn.disabled = true;
       return false;
     }

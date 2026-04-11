@@ -5,17 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FComp - 文件比对工具</title>
   <link rel="stylesheet" href="css/styles.css">
-  <!-- jsdiff CDN -->
-  <script>
-    window.jsdiffLoaded = false;
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/jsdiff@5.2.0/dist/jsdiff.min.js"></script>
-  <script>
-    if (typeof Diff !== 'undefined') window.jsdiffLoaded = true;
-  </script>
+  <!-- jsdiff CDN (cdnjs) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.2/diff.min.js"></script>
 </head>
 <body>
   <div class="app-container">
+    <!-- Toast 通知容器 -->
+    <div id="toast-container" class="toast-container"></div>
+    
     <!-- Header -->
     <header class="header">
       <div class="header-left">
