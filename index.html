@@ -70,21 +70,24 @@
             <span class="file-name" id="source-file-name">
               <span class="file-name-placeholder">未选择文件</span>
             </span>
-            <div class="panel-actions">
-              <input type="file" class="file-input" id="source-file-input" accept=".txt,.js,.jsx,.ts,.tsx,.json,.html,.htm,.css,.scss,.sass,.less,.md,.markdown,.xml,.yaml,.yml,.sql,.sh,.bash,.log,.conf,.ini,.properties" hidden>
-              <button type="button" class="btn-secondary btn-upload" id="source-upload-btn" aria-label="上传文件">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="17 8 12 3 7 8"></polyline>
-                  <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-                上传文件
-              </button>
-            </div>
           </header>
-          <div class="editor-container" role="region" aria-label="源文件内容">
-            <div class="line-numbers" id="source-line-numbers"></div>
-            <div class="code-content" id="source-code-content" contenteditable="true" role="textbox" aria-label="源文件编辑区" spellcheck="false"></div>
+          <div class="drop-zone" id="source-drop-zone" aria-label="源文件拖放区域">
+            <input type="file" class="file-input-hidden" id="source-file-input" accept=".txt,.js,.jsx,.ts,.tsx,.json,.html,.htm,.css,.scss,.sass,.less,.md,.markdown,.xml,.yaml,.yml,.sql,.sh,.bash,.log,.conf,.ini,.properties">
+            <div class="drop-zone-content">
+              <svg class="drop-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <div class="drop-zone-text">
+                <span class="drop-zone-title">拖放文件到此处</span>
+                <span class="drop-zone-subtitle">或点击选择文件</span>
+              </div>
+              <button type="button" class="clear-file-btn" id="source-clear-btn">清除文件</button>
+            </div>
+            <div class="file-preview" id="source-file-preview" style="display:none;">
+              <div class="file-preview-content" id="source-code-content"></div>
+            </div>
           </div>
         </section>
 
@@ -104,21 +107,24 @@
             <span class="file-name" id="target-file-name">
               <span class="file-name-placeholder">未选择文件</span>
             </span>
-            <div class="panel-actions">
-              <input type="file" class="file-input" id="target-file-input" accept=".txt,.js,.jsx,.ts,.tsx,.json,.html,.htm,.css,.scss,.sass,.less,.md,.markdown,.xml,.yaml,.yml,.sql,.sh,.bash,.log,.conf,.ini,.properties" hidden>
-              <button type="button" class="btn-secondary btn-upload" id="target-upload-btn" aria-label="上传文件">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="17 8 12 3 7 8"></polyline>
-                  <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-                上传文件
-              </button>
-            </div>
           </header>
-          <div class="editor-container" role="region" aria-label="目标文件内容">
-            <div class="line-numbers" id="target-line-numbers"></div>
-            <div class="code-content" id="target-code-content" contenteditable="true" role="textbox" aria-label="目标文件编辑区" spellcheck="false"></div>
+          <div class="drop-zone" id="target-drop-zone" aria-label="比较文件拖放区域">
+            <input type="file" class="file-input-hidden" id="target-file-input" accept=".txt,.js,.jsx,.ts,.tsx,.json,.html,.htm,.css,.scss,.sass,.less,.md,.markdown,.xml,.yaml,.yml,.sql,.sh,.bash,.log,.conf,.ini,.properties">
+            <div class="drop-zone-content">
+              <svg class="drop-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <div class="drop-zone-text">
+                <span class="drop-zone-title">拖放文件到此处</span>
+                <span class="drop-zone-subtitle">或点击选择文件</span>
+              </div>
+              <button type="button" class="clear-file-btn" id="target-clear-btn">清除文件</button>
+            </div>
+            <div class="file-preview" id="target-file-preview" style="display:none;">
+              <div class="file-preview-content" id="target-code-content"></div>
+            </div>
           </div>
         </section>
       </div>
