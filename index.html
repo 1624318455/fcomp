@@ -81,12 +81,15 @@
               </svg>
               <div class="drop-zone-text">
                 <span class="drop-zone-title">拖放文件到此处</span>
-                <span class="drop-zone-subtitle">或点击选择文件</span>
+                <span class="drop-zone-subtitle">或点击选择文件 · 支持粘贴文本</span>
               </div>
               <button type="button" class="clear-file-btn" id="source-clear-btn">清除文件</button>
             </div>
             <div class="file-preview" id="source-file-preview">
-              <div class="file-preview-content" id="source-code-content"></div>
+              <div class="editor-container">
+                <div class="line-numbers" id="source-line-numbers"></div>
+                <div class="code-content" id="source-code-content"></div>
+              </div>
             </div>
           </div>
         </section>
@@ -118,12 +121,15 @@
               </svg>
               <div class="drop-zone-text">
                 <span class="drop-zone-title">拖放文件到此处</span>
-                <span class="drop-zone-subtitle">或点击选择文件</span>
+                <span class="drop-zone-subtitle">或点击选择文件 · 支持粘贴文本</span>
               </div>
               <button type="button" class="clear-file-btn" id="target-clear-btn">清除文件</button>
             </div>
             <div class="file-preview" id="target-file-preview">
-              <div class="file-preview-content" id="target-code-content"></div>
+              <div class="editor-container">
+                <div class="line-numbers" id="target-line-numbers"></div>
+                <div class="code-content" id="target-code-content"></div>
+              </div>
             </div>
           </div>
         </section>
@@ -132,6 +138,7 @@
       <!-- Diff Results Panel -->
       <div class="diff-results-panel" id="diff-results-panel">
         <div class="diff-results-header">
+          <span class="resize-handle"></span>
           <span class="diff-results-title">差异详情</span>
           <span class="diff-results-stats">
             <span class="stat-item"><span class="stat-dot stat-dot-total"></span><span id="stat-total">0</span> 总计</span>

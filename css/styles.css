@@ -369,20 +369,74 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  overflow: auto;
+  overflow: hidden;
   background-color: var(--color-bg-card);
   display: none;
 }
 
-.file-preview-content {
-  padding: var(--space-3);
+/* 编辑器容器 */
+.editor-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+/* 行号栏 */
+.line-numbers {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3) var(--space-2);
+  background-color: var(--color-bg-title);
+  border-right: 1px solid var(--color-border);
+  text-align: right;
+  user-select: none;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+
+.line-number {
+  display: block;
+  min-height: calc(13px * 1.7);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--color-text-placeholder);
+  padding: 0 var(--space-1);
+  border-right: 2px solid transparent;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.line-number.diff-gutter-added {
+  color: var(--color-added-text);
+  border-right-color: var(--color-added-border);
+  background-color: var(--color-added-bg);
+}
+
+.line-number.diff-gutter-removed {
+  color: var(--color-removed-text);
+  border-right-color: var(--color-removed-border);
+  background-color: var(--color-removed-bg);
+}
+
+.line-number.diff-gutter-modified {
+  color: var(--color-modified-text);
+  border-right-color: var(--color-modified-border);
+  background-color: var(--color-modified-bg);
+}
+
+/* 代码内容区域 */
+.code-content {
+  flex: 1;
+  padding: var(--space-3) var(--space-2);
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.7;
   color: var(--color-text-primary);
-  white-space: pre-wrap;
-  word-break: break-word;
-  min-height: 100%;
+  min-width: 0;
+  overflow: visible;
 }
 
 /* 清空按钮 */
@@ -433,7 +487,7 @@ body {
 .diff-line {
   display: flex;
   min-height: calc(13px * 1.7);
-  padding-left: var(--space-3);
+  padding: 0 var(--space-3);
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.7;
@@ -472,7 +526,12 @@ body {
 /* 相同行 */
 .diff-line-unchanged {
   background-color: transparent;
-  border-left: 3px solid transparent;
+}
+
+/* 空行（差异对齐占位） */
+.diff-line-empty {
+  background-color: transparent;
+  opacity: 0.3;
 }
 
 .line-content {
@@ -1098,6 +1157,20 @@ body {
   cursor: ns-resize;
   user-select: none;
   flex-shrink: 0;
+}
+
+.resize-handle {
+  display: inline-block;
+  width: 24px;
+  height: 4px;
+  border-radius: 2px;
+  background-color: var(--color-border-hover);
+  flex-shrink: 0;
+  transition: background-color var(--transition-fast);
+}
+
+.diff-results-header:hover .resize-handle {
+  background-color: var(--color-text-secondary);
 }
 
 .diff-results-title {
