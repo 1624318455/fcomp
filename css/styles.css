@@ -1243,3 +1243,295 @@ body {
   word-break: break-word;
   color: var(--color-text-body);
 }
+
+
+/* ========================================
+   工具栏 Diff Tools Bar
+   ======================================== */
+
+.diff-tools-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.view-mode-toggle {
+  display: inline-flex;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.view-mode-btn {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-card);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.view-mode-btn + .view-mode-btn {
+  border-left: 1px solid var(--color-border);
+}
+
+.view-mode-btn.active {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.view-mode-btn:hover:not(.active) {
+  background-color: var(--color-bg-title);
+}
+
+.btn-export {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* 紧凑开关 */
+.switch-compact .switch-label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.switch-compact .switch-track {
+  width: 32px;
+  height: 18px;
+}
+
+.switch-compact .switch-thumb {
+  width: 14px;
+  height: 14px;
+  top: 2px;
+  left: 2px;
+}
+
+.switch-compact .switch-input:checked + .switch-track .switch-thumb {
+  transform: translateX(14px);
+}
+
+/* 换行控制 */
+.no-wrap .diff-line,
+.no-wrap .code-line {
+  white-space: pre;
+}
+
+.no-wrap .line-content {
+  white-space: pre;
+}
+
+
+/* ========================================
+   Unified 视图
+   ======================================== */
+
+.unified-view {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.unified-line {
+  display: flex;
+  min-height: calc(13px * 1.7);
+  border-left: 3px solid transparent;
+}
+
+.unified-line-unchanged {
+  background-color: transparent;
+  color: var(--color-text-primary);
+}
+
+.unified-line-removed {
+  background-color: var(--color-removed-bg);
+  border-left-color: var(--color-removed-border);
+  color: var(--color-removed-text);
+}
+
+.unified-line-added {
+  background-color: var(--color-added-bg);
+  border-left-color: var(--color-added-border);
+  color: var(--color-added-text);
+}
+
+.unified-line-modified {
+  background-color: var(--color-modified-bg);
+  border-left-color: var(--color-modified-border);
+  color: var(--color-modified-text);
+}
+
+.unified-line-marker {
+  display: inline-block;
+  width: 20px;
+  text-align: center;
+  color: var(--color-text-placeholder);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.unified-line-num {
+  display: inline-block;
+  width: 40px;
+  text-align: right;
+  padding-right: var(--space-2);
+  color: var(--color-text-placeholder);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.unified-line-content {
+  flex: 1;
+  padding: 0 var(--space-2);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.unified-separator {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 var(--space-3);
+  background-color: var(--color-bg-title);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-placeholder);
+  font-size: 12px;
+  user-select: none;
+}
+
+.no-wrap .unified-line-content {
+  white-space: pre;
+}
+
+
+/* ========================================
+   暗色主题 Dark Theme
+   ======================================== */
+
+[data-theme="dark"] {
+  --color-primary: #60a5fa;
+  --color-primary-hover: #93c5fd;
+  --color-primary-active: #3b82f6;
+  --color-primary-light: #1e40af;
+  --color-primary-lighter: #1e3a5f;
+
+  --color-added-bg: #052e16;
+  --color-added-border: #22c55e;
+  --color-added-text: #86efac;
+  --color-added-word: #166534;
+
+  --color-removed-bg: #450a0a;
+  --color-removed-border: #ef4444;
+  --color-removed-text: #fca5a5;
+  --color-removed-word: #7f1d1d;
+
+  --color-modified-bg: #451a03;
+  --color-modified-border: #f59e0b;
+  --color-modified-text: #fcd34d;
+  --color-modified-word: #78350f;
+
+  --color-bg-page: #111827;
+  --color-bg-card: #1f2937;
+  --color-bg-header: #1f2937;
+  --color-bg-footer: #1f2937;
+  --color-bg-title: #374151;
+  --color-border: #374151;
+  --color-border-hover: #4b5563;
+
+  --color-text-primary: #f9fafb;
+  --color-text-body: #e5e7eb;
+  --color-text-secondary: #9ca3af;
+  --color-text-placeholder: #6b7280;
+  --color-text-disabled: #4b5563;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] body {
+  background-color: var(--color-bg-page);
+}
+
+[data-theme="dark"] .drop-zone-content {
+  background-color: var(--color-bg-card);
+}
+
+[data-theme="dark"] .btn-secondary {
+  background-color: var(--color-bg-card);
+  color: var(--color-primary);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+  background-color: var(--color-primary-lighter);
+}
+
+[data-theme="dark"] .btn-primary:disabled {
+  background-color: var(--color-primary-light);
+}
+
+[data-theme="dark"] .drop-zone .clear-file-btn {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .switch-track {
+  background-color: var(--color-border-hover);
+}
+
+[data-theme="dark"] .diff-result-item {
+  color: var(--color-text-body);
+}
+
+[data-theme="dark"] .diff-results-placeholder {
+  color: var(--color-text-placeholder);
+}
+
+[data-theme="dark"] .view-mode-btn {
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .mobile-warning {
+  background-color: var(--color-bg-card);
+}
+
+/* 主题切换按钮 */
+.btn-icon-only {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.btn-icon-only:hover {
+  background-color: var(--color-bg-title);
+  color: var(--color-text-body);
+  border-color: var(--color-border-hover);
+}
+
+.theme-icon-dark {
+  display: none;
+}
+
+[data-theme="dark"] .theme-icon-light {
+  display: none;
+}
+
+[data-theme="dark"] .theme-icon-dark {
+  display: block;
+}

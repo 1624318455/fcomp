@@ -57,7 +57,11 @@
     targetFileName: '',
     diffResult: null,
     syncScrollEnabled: true,
-    isComparing: false
+    isComparing: false,
+    viewMode: 'split',
+    hideUnchanged: false,
+    wordWrap: false,
+    theme: 'light'
   };
 
   // ========================================
@@ -76,6 +80,7 @@
     setupPasteHandlers();
     setupDiffPanelResize();
     setupScrollSync();
+    setupThemeToggle();
     checkJsDiffLoaded();
   }
 
@@ -136,6 +141,45 @@
       closeBtn.addEventListener('click', function() {
         el.diffPanel.classList.remove('active');
       });
+    }
+
+    // 视图模式切换
+    var viewModeBtns = document.querySelectorAll('.view-mode-btn');
+    viewModeBtns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        viewModeBtns.forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        state.viewMode = btn.dataset.mode;
+        if (state.diffResult) {
+          renderDiffResultsPanel(state.diffResult);
+        }
+      });
+    });
+
+    // 隐藏未变化行
+    var hideUnchangedToggle = document.getElementById('hide-unchanged-toggle');
+    if (hideUnchangedToggle) {
+      hideUnchangedToggle.addEventListener('change', function(e) {
+        state.hideUnchanged = e.target.checked;
+        if (state.diffResult) {
+          renderDiffResultsPanel(state.diffResult);
+        }
+      });
+    }
+
+    // 换行控制
+    var wordWrapToggle = document.getElementById('word-wrap-toggle');
+    if (wordWrapToggle) {
+      wordWrapToggle.addEventListener('change', function(e) {
+        state.wordWrap = e.target.checked;
+        document.body.classList.toggle('no-wrap', e.target.checked);
+      });
+    }
+
+    // 导出
+    var exportBtn = document.getElementById('export-diff');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', exportDiff);
     }
   }
 
@@ -407,6 +451,10 @@
       var line = lines[i];
       var lineNum = i + 1;
 
+      // 隐藏未变化行
+      if (state.hideUnchanged && line.type === 'unchanged') continue;
+      if (state.hideUnchanged && line.type === 'empty') continue;
+
       // 行号
       var lineNumClass = 'line-number';
       if (line.type === 'added' || line.type === 'removed' || line.type === 'modified') {
@@ -508,6 +556,12 @@
 
     // 计算词级差异
     computeWordDiffs(diffResult);
+
+    // Unified 视图
+    if (state.viewMode === 'unified') {
+      renderUnifiedView(diffResult, contentEl);
+      return;
+    }
 
     contentEl.innerHTML = '';
 
@@ -652,7 +706,7 @@
 
     header.addEventListener('mousedown', function(e) {
       if (!diffPanel.classList.contains('active')) return;
-      if (e.target.closest('.btn-text')) return;
+      if (e.target.closest('.btn-text') || e.target.closest('.diff-tools-bar') || e.target.closest('.switch')) return;
       isResizing = true;
       startY = e.clientY;
       startHeight = diffPanel.offsetHeight;
@@ -674,6 +728,173 @@
         document.body.style.userSelect = '';
       }
     });
+  }
+
+  // ========================================
+  // 统一差异视图渲染
+  // ========================================
+
+  function renderUnifiedView(diffResult, contentEl) {
+    var sourceLines = diffResult.source || [];
+    var targetLines = diffResult.target || [];
+    var html = '';
+
+    for (var i = 0; i < sourceLines.length; i++) {
+      var sl = sourceLines[i];
+      var tl = targetLines[i];
+
+      if (sl.type === 'unchanged' && tl.type === 'unchanged') {
+        if (state.hideUnchanged) continue;
+        html += buildUnifiedLine('unchanged', (i + 1), (i + 1), ' ', escapeHtml(sl.content));
+      } else if (sl.type === 'removed' && tl.type === 'empty') {
+        html += buildUnifiedLine('removed', (i + 1), '', '-', escapeHtml(sl.content));
+      } else if (sl.type === 'empty' && tl.type === 'added') {
+        html += buildUnifiedLine('added', '', (i + 1), '+', escapeHtml(tl.content));
+      } else if (sl.type === 'modified' && tl.type === 'modified') {
+        html += buildUnifiedLine('removed', (i + 1), '', '-', sl.wordDiff ? renderWordDiffRemoved(sl.wordDiff) : escapeHtml(sl.content));
+        html += buildUnifiedLine('added', '', (i + 1), '+', tl.wordDiff ? renderWordDiffAdded(tl.wordDiff) : escapeHtml(tl.content));
+      } else {
+        html += buildUnifiedLine('unchanged', (i + 1), (i + 1), ' ', escapeHtml(sl.content || ''));
+      }
+    }
+
+    contentEl.innerHTML = '<div class="unified-view">' + html + '</div>';
+  }
+
+  function buildUnifiedLine(type, sourceNum, targetNum, marker, content) {
+    var cls = 'unified-line unified-line-' + type;
+    var numStr = sourceNum ? String(sourceNum) : '';
+    var numStr2 = targetNum ? String(targetNum) : '';
+    return '<div class="' + cls + '">' +
+      '<span class="unified-line-marker">' + marker + '</span>' +
+      '<span class="unified-line-num">' + numStr + '</span>' +
+      '<span class="unified-line-num">' + numStr2 + '</span>' +
+      '<span class="unified-line-content">' + content + '</span>' +
+      '</div>';
+  }
+
+  function renderWordDiffRemoved(wordDiff) {
+    var html = '';
+    for (var i = 0; i < wordDiff.length; i++) {
+      var part = wordDiff[i];
+      var escaped = escapeHtml(part.value);
+      if (part.removed) {
+        html += '<span class="word-removed">' + escaped + '</span>';
+      } else if (!part.added) {
+        html += escaped;
+      }
+    }
+    return html || '&nbsp;';
+  }
+
+  function renderWordDiffAdded(wordDiff) {
+    var html = '';
+    for (var i = 0; i < wordDiff.length; i++) {
+      var part = wordDiff[i];
+      var escaped = escapeHtml(part.value);
+      if (part.added) {
+        html += '<span class="word-added">' + escaped + '</span>';
+      } else if (!part.removed) {
+        html += escaped;
+      }
+    }
+    return html || '&nbsp;';
+  }
+
+  // ========================================
+  // 导出差异报告
+  // ========================================
+
+  function exportDiff() {
+    if (!state.diffResult) {
+      showToast('没有可导出的差异结果', 'warning');
+      return;
+    }
+
+    var sourceLines = state.diffResult.source || [];
+    var targetLines = state.diffResult.target || [];
+    var lines = [];
+
+    lines.push('FComp 差异报告');
+    lines.push('原始文件: ' + (state.sourceFileName || '未命名'));
+    lines.push('比较文件: ' + (state.targetFileName || '未命名'));
+    lines.push('生成时间: ' + new Date().toLocaleString());
+    lines.push('---');
+    lines.push('');
+
+    if (state.viewMode === 'unified') {
+      lines.push('--- 原始文件');
+      lines.push('+++ 比较文件');
+      lines.push('');
+      for (var i = 0; i < sourceLines.length; i++) {
+        var sl = sourceLines[i];
+        var tl = targetLines[i];
+        if (sl.type === 'unchanged' && tl.type === 'unchanged') {
+          lines.push('  ' + sl.content);
+        } else if (sl.type === 'removed' && tl.type === 'empty') {
+          lines.push('- ' + sl.content);
+        } else if (sl.type === 'empty' && tl.type === 'added') {
+          lines.push('+ ' + tl.content);
+        } else if (sl.type === 'modified' && tl.type === 'modified') {
+          lines.push('- ' + sl.content);
+          lines.push('+ ' + tl.content);
+        }
+      }
+    } else {
+      for (var i = 0; i < sourceLines.length; i++) {
+        var sl = sourceLines[i];
+        var tl = targetLines[i];
+        if (sl.type !== 'unchanged' || tl.type !== 'unchanged') {
+          var lineNum = i + 1;
+          if (sl.type === 'removed') {
+            lines.push('[第' + lineNum + '行 - 删除] ' + sl.content);
+          } else if (tl.type === 'added') {
+            lines.push('[第' + lineNum + '行 - 新增] ' + tl.content);
+          } else if (sl.type === 'modified') {
+            lines.push('[第' + lineNum + '行 - 修改]');
+            lines.push('  - ' + sl.content);
+            lines.push('  + ' + tl.content);
+          }
+        }
+      }
+    }
+
+    var blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'diff-report-' + Date.now() + '.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast('差异报告已导出', 'success');
+  }
+
+  // ========================================
+  // 暗色主题切换
+  // ========================================
+
+  function setupThemeToggle() {
+    var savedTheme = localStorage.getItem('fcomp-theme');
+    if (savedTheme) {
+      state.theme = savedTheme;
+      applyTheme(savedTheme);
+    }
+
+    var themeBtn = document.getElementById('theme-toggle');
+    if (themeBtn) {
+      themeBtn.addEventListener('click', function() {
+        state.theme = state.theme === 'light' ? 'dark' : 'light';
+        applyTheme(state.theme);
+        localStorage.setItem('fcomp-theme', state.theme);
+      });
+    }
+  }
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
   }
 
   // ========================================
