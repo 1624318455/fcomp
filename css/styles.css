@@ -957,7 +957,9 @@ body {
   .panel {
     min-height: 300px;
   }
-  .mobile-warning {
+  /* PC 提示只给「窄屏 + 触摸设备」：纯窄容器（嵌入宿主、窄窗口）不弹，
+     桌面布局下双栏挤一点也比盖一层误导性警告好 */
+  html.touch .mobile-warning {
     display: flex;
   }
   .header-right {

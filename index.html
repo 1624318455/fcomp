@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FComp - 文件比对工具</title>
   <link rel="stylesheet" href="css/styles.css">
+  <script>
+    // 触摸设备检测：mobile-warning 只在「窄屏 + 触摸」时显示，
+    // 桌面端窄容器（iframe 嵌入宿主、半屏窗口）不再误弹「请使用 PC 端访问」
+    if (window.matchMedia && matchMedia('(pointer: coarse)').matches) {
+      document.documentElement.classList.add('touch');
+    }
+  </script>
   <!-- jsdiff CDN (cdnjs) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.2/diff.min.js"></script>
 </head>
