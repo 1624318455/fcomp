@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.1] - 2026-10-28
+
+### fix: 末尾追加行被误判为修改
+
+- **问题**：jsdiff `diffLines` 把行尾换行符算进 token，「末尾无换行符的最后一行」与「中间同内容的行」是不同 token。导致最常见的「在文件末尾追加几行」场景整段错位：同内容行被判为 modified（甚至成对虚增）、统计虚高
+- **修复**：`DiffEngine.compare()` 比对前对两侧文本统一补齐行尾换行符，规避 token 不对齐
+- **复现**：左 `alpha\nbravo`（无尾换行），右 `alpha\nbravo\ncharlie` → 修复前 total=3（added=1, modified=2），修复后 total=1（added=1）
+
+### 涉及文件
+
+- `js/diff-engine.js` — `compare()` 入口补齐尾换行
+
 ## [1.3.0] - 2026-05-21
 
 ### feat: Diffchecker 级别产品力升级

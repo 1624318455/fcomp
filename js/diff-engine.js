@@ -14,9 +14,20 @@ const DiffEngine = (function() {
    * @returns {Object} 差异结果对象
    */
   function compare(source, target) {
+    // jsdiff 的 diffLines 把行尾换行符算进 token：「末尾无换行符的最后一行」
+    // 与「中间同内容的行」是不同 token。后果：最常见的「在文件末尾追加行」
+    // 场景整段错位 —— 同内容行被判为 modified、统计虚高。
+    // 比对前统一补齐行尾换行符，规避 token 不对齐。
+    if (typeof source === 'string' && source !== '' && source.slice(-1) !== '\n') {
+      source += '\n';
+    }
+    if (typeof target === 'string' && target !== '' && target.slice(-1) !== '\n') {
+      target += '\n';
+    }
+
     // 使用 jsdiff 库的 diffLines 方法
     var linesDiff = Diff.diffLines(source, target);
-    
+
     return normalizeDiffResult(linesDiff);
   }
 
